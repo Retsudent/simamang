@@ -2,25 +2,17 @@
 
 namespace App\Controllers;
 
-use App\Models\LogAktivitasModel;
-use App\Models\KomentarModel;
-use App\Models\UserModel;
+use CodeIgniter\Controller;
 
 class Pembimbing extends BaseController
 {
     protected $session;
-    protected $logModel;
-    protected $komentarModel;
-    protected $userModel;
-    protected $pembimbingSiswaModel;
+    protected $db;
 
     public function __construct()
     {
         $this->session = session();
-        $this->logModel = new LogAktivitasModel();
-        $this->komentarModel = new KomentarModel();
-        $this->userModel = new UserModel();
-        $this->pembimbingSiswaModel = new \App\Models\PembimbingSiswaModel();
+        $this->db = \Config\Database::connect();
         
         // Cek apakah user sudah login dan role-nya pembimbing
         if (!$this->session->get('isLoggedIn') || $this->session->get('role') !== 'pembimbing') {
@@ -32,16 +24,43 @@ class Pembimbing extends BaseController
     {
         $userId = $this->session->get('user_id');
 
-        // Ambil log menunggu & statistik status
-        $pendingLogs = $this->logModel->getLogPendingByPembimbing($userId);
-        $statusCounts = $this->logModel->countStatusByPembimbing($userId);
-        $assignedIds = $this->pembimbingSiswaModel->getSiswaIdsForPembimbing($userId);
+        // Ambil log menunggu untuk pembimbing ini
+        $pendingLogs = $this->db->table('log_aktivitas')
+                                ->select('log_aktivitas.*, siswa.nama as siswa_nama, siswa.nis, siswa.tempat_magang')
+                                ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
+                                ->where('log_aktivitas.status', 'menunggu')
+                                ->get()
+                                ->getResultArray();
+
+        // Hitung statistik status
+        $statusCountsRaw = $this->db->table('log_aktivitas')
+                                ->select('status, COUNT(*) as total')
+                                ->groupBy('status')
+                                ->get()
+                                ->getResultArray();
+        
+        // Convert ke format yang diharapkan View
+        $statusCounts = [
+            'menunggu' => 0,
+            'disetujui' => 0,
+            'revisi' => 0,
+            'ditolak' => 0
+        ];
+        foreach ($statusCountsRaw as $item) {
+            $statusCounts[$item['status']] = (int)$item['total'];
+        }
+
+        // Hitung total siswa yang ada log aktivitas
+        $assignedCount = $this->db->table('log_aktivitas')
+                                 ->select('DISTINCT(siswa_id)')
+                                 ->get()
+                                 ->getResultArray();
 
         $data = [
             'title' => 'Dashboard Pembimbing - SIMAMANG',
             'pendingLogs' => $pendingLogs,
             'statusCounts' => $statusCounts,
-            'assignedCount' => count($assignedIds),
+            'assignedCount' => count($assignedCount),
         ];
 
         return view('pembimbing/dashboard', $data);
@@ -49,13 +68,14 @@ class Pembimbing extends BaseController
 
     public function aktivitasSiswa()
     {
-        // Ambil siswa yang dibimbing oleh pembimbing yang login
-        $pembimbingId = $this->session->get('user_id');
-        $siswaIds = $this->pembimbingSiswaModel->getSiswaIdsForPembimbing($pembimbingId);
-        $siswa = [];
-        if (!empty($siswaIds)) {
-            $siswa = $this->userModel->where('role', 'siswa')->whereIn('id', $siswaIds)->findAll();
-        }
+        // Ambil semua siswa yang ada log aktivitas (karena tidak ada tabel pembimbing_siswa)
+        $siswa = $this->db->table('siswa')
+                          ->select('siswa.*, COUNT(log_aktivitas.id) as total_log')
+                          ->join('log_aktivitas', 'log_aktivitas.siswa_id = siswa.id', 'left')
+                          ->where('siswa.status', 'aktif')
+                          ->groupBy('siswa.id')
+                          ->get()
+                          ->getResultArray();
         
         $data = [
             'title' => 'Aktivitas Siswa - SIMAMANG',
@@ -67,19 +87,17 @@ class Pembimbing extends BaseController
 
     public function logSiswa($siswaId)
     {
-        $siswa = $this->userModel->find($siswaId);
-        if (!$siswa || $siswa['role'] !== 'siswa') {
+        $siswa = $this->db->table('siswa')->where('id', $siswaId)->get()->getRowArray();
+        if (!$siswa) {
             return redirect()->to('/pembimbing/aktivitas-siswa')->with('error', 'Siswa tidak ditemukan');
         }
 
-        // Pastikan siswa ini memang dibimbing oleh pembimbing yang login
-        $pembimbingId = $this->session->get('user_id');
-        $allowed = in_array((int)$siswaId, $this->pembimbingSiswaModel->getSiswaIdsForPembimbing($pembimbingId), true);
-        if (!$allowed) {
-            return redirect()->to('/pembimbing/aktivitas-siswa')->with('error', 'Anda tidak membimbing siswa tersebut');
-        }
-        
-        $logs = $this->logModel->getLogBySiswa($siswaId);
+        // Ambil log aktivitas siswa
+        $logs = $this->db->table('log_aktivitas')
+                         ->where('siswa_id', $siswaId)
+                         ->orderBy('created_at', 'DESC')
+                         ->get()
+                         ->getResultArray();
         
         $data = [
             'title' => 'Log Aktivitas Siswa - SIMAMANG',
@@ -92,18 +110,18 @@ class Pembimbing extends BaseController
 
     public function detailLog($logId)
     {
-        $log = $this->logModel->getLogWithKomentar($logId);
+        $log = $this->db->table('log_aktivitas')
+                        ->select('log_aktivitas.*, siswa.nama as nama_siswa')
+                        ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
+                        ->where('log_aktivitas.id', $logId)
+                        ->get()
+                        ->getRowArray();
+        
         if (!$log) {
             return redirect()->to('/pembimbing/dashboard')->with('error', 'Log tidak ditemukan');
         }
         
-        $siswa = $this->userModel->find($log['siswa_id']);
-        // Pastikan akses log milik siswa yang dibimbing
-        $pembimbingId = $this->session->get('user_id');
-        $allowed = in_array((int)$log['siswa_id'], $this->pembimbingSiswaModel->getSiswaIdsForPembimbing($pembimbingId), true);
-        if (!$allowed) {
-            return redirect()->to('/pembimbing/dashboard')->with('error', 'Anda tidak membimbing siswa tersebut');
-        }
+        $siswa = $this->db->table('siswa')->where('id', $log['siswa_id'])->get()->getRowArray();
         
         $data = [
             'title' => 'Detail Log Aktivitas - SIMAMANG',
@@ -132,10 +150,18 @@ class Pembimbing extends BaseController
             return redirect()->back()->with('error', 'Status tidak valid');
         }
         
-        // Simpan komentar
-        if ($this->komentarModel->saveKomentar($logId, $pembimbingId, $komentar)) {
+        // Simpan komentar ke tabel komentar_pembimbing
+        $komentarData = [
+            'log_id' => $logId,
+            'pembimbing_id' => $pembimbingId,
+            'komentar' => $komentar,
+            'rating' => $request->getPost('rating') ?? null,
+            'status' => 'dibaca'
+        ];
+        
+        if ($this->db->table('komentar_pembimbing')->insert($komentarData)) {
             // Update status log
-            $this->logModel->update($logId, ['status' => $status]);
+            $this->db->table('log_aktivitas')->where('id', $logId)->update(['status' => $status]);
             
             return redirect()->back()->with('success', 'Komentar berhasil disimpan');
         } else {
@@ -159,7 +185,7 @@ class Pembimbing extends BaseController
         }
         
         // Update status log
-        if ($this->logModel->update($logId, ['status' => $status])) {
+        if ($this->db->table('log_aktivitas')->where('id', $logId)->update(['status' => $status])) {
             return redirect()->back()->with('success', 'Status log berhasil diupdate');
         } else {
             return redirect()->back()->with('error', 'Gagal mengupdate status log');

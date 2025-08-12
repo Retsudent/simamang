@@ -3,9 +3,8 @@
 namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
-use CodeIgniter\Database\RawSql;
 
-class CreateSimamangTables extends Migration
+class CreateTables_001 extends Migration
 {
     public function up()
     {
@@ -50,14 +49,11 @@ class CreateSimamangTables extends Migration
             ],
             'created_at' => [
                 'type' => 'TIMESTAMP',
-                'default' => new RawSql('CURRENT_TIMESTAMP'),
+                'default' => 'CURRENT_TIMESTAMP',
             ],
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('users');
-
-        // Tambahkan CHECK constraint untuk role (MySQL)
-        $this->db->query("ALTER TABLE users ADD CONSTRAINT chk_role CHECK (role IN ('admin', 'siswa', 'pembimbing'))");
 
         // Tabel log_aktivitas
         $this->forge->addField([
@@ -100,14 +96,11 @@ class CreateSimamangTables extends Migration
             ],
             'created_at' => [
                 'type' => 'TIMESTAMP',
-                'default' => new RawSql('CURRENT_TIMESTAMP'),
+                'default' => 'CURRENT_TIMESTAMP',
             ],
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('log_aktivitas');
-
-        // Tambahkan CHECK constraint untuk status
-        $this->db->query("ALTER TABLE log_aktivitas ADD CONSTRAINT chk_status CHECK (status IN ('menunggu', 'disetujui', 'revisi'))");
 
         // Tabel komentar_pembimbing
         $this->forge->addField([
@@ -133,21 +126,43 @@ class CreateSimamangTables extends Migration
             ],
             'created_at' => [
                 'type' => 'TIMESTAMP',
-                'default' => new RawSql('CURRENT_TIMESTAMP'),
+                'default' => 'CURRENT_TIMESTAMP',
             ],
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('komentar_pembimbing');
 
-        // Jika mau bisa tambahkan foreign key constraints di sini manual
-        // Contoh:
-        // $this->db->query("ALTER TABLE log_aktivitas ADD CONSTRAINT fk_siswa FOREIGN KEY (siswa_id) REFERENCES users(id) ON DELETE CASCADE");
-        // $this->db->query("ALTER TABLE komentar_pembimbing ADD CONSTRAINT fk_log FOREIGN KEY (log_id) REFERENCES log_aktivitas(id) ON DELETE CASCADE");
-        // $this->db->query("ALTER TABLE komentar_pembimbing ADD CONSTRAINT fk_pembimbing FOREIGN KEY (pembimbing_id) REFERENCES users(id) ON DELETE CASCADE");
+        // Tabel pembimbing_siswa
+        $this->forge->addField([
+            'id' => [
+                'type'           => 'INT',
+                'constraint'     => 11,
+                'unsigned'       => true,
+                'auto_increment' => true,
+            ],
+            'pembimbing_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+            ],
+            'siswa_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+            ],
+            'created_at' => [
+                'type' => 'TIMESTAMP',
+                'default' => 'CURRENT_TIMESTAMP',
+            ],
+        ]);
+        $this->forge->addKey('id', true);
+        $this->forge->addUniqueKey(['pembimbing_id', 'siswa_id']);
+        $this->forge->createTable('pembimbing_siswa');
     }
 
     public function down()
     {
+        $this->forge->dropTable('pembimbing_siswa');
         $this->forge->dropTable('komentar_pembimbing');
         $this->forge->dropTable('log_aktivitas');
         $this->forge->dropTable('users');

@@ -2,22 +2,17 @@
 
 namespace App\Controllers;
 
-use App\Models\UserModel;
-use App\Models\LogAktivitasModel;
+use CodeIgniter\Controller;
 
 class Admin extends BaseController
 {
     protected $session;
-    protected $userModel;
-    protected $logModel;
-    protected $pembimbingSiswaModel;
+    protected $db;
 
     public function __construct()
     {
         $this->session = session();
-        $this->userModel = new UserModel();
-        $this->logModel = new LogAktivitasModel();
-        $this->pembimbingSiswaModel = new \App\Models\PembimbingSiswaModel();
+        $this->db = \Config\Database::connect();
         
         // Cek apakah user sudah login dan role-nya admin
         if (!$this->session->get('isLoggedIn') || $this->session->get('role') !== 'admin') {
@@ -27,11 +22,11 @@ class Admin extends BaseController
 
     public function dashboard()
     {
-        // Hitung statistik
-        $totalSiswa = $this->userModel->where('role', 'siswa')->countAllResults();
-        $totalPembimbing = $this->userModel->where('role', 'pembimbing')->countAllResults();
-        $totalLog = $this->logModel->countAllResults();
-        $logPending = $this->logModel->where('status', 'menunggu')->countAllResults();
+        // Hitung statistik dari tabel terpisah
+        $totalSiswa = $this->db->table('siswa')->where('status', 'aktif')->countAllResults();
+        $totalPembimbing = $this->db->table('pembimbing')->where('status', 'aktif')->countAllResults();
+        $totalLog = $this->db->table('log_aktivitas')->countAllResults();
+        $logPending = $this->db->table('log_aktivitas')->where('status', 'menunggu')->countAllResults();
         
         $data = [
             'title' => 'Dashboard Admin - SIMAMANG',
@@ -46,7 +41,7 @@ class Admin extends BaseController
 
     public function kelolaSiswa()
     {
-        $siswa = $this->userModel->where('role', 'siswa')->findAll();
+        $siswa = $this->db->table('siswa')->where('status', 'aktif')->get()->getResultArray();
         
         $data = [
             'title' => 'Kelola Data Siswa - SIMAMANG',
@@ -72,7 +67,7 @@ class Admin extends BaseController
         // Validasi input
         $rules = [
             'nama' => 'required|min_length[3]',
-            'username' => 'required|min_length[3]|is_unique[users.username]',
+            'username' => 'required|min_length[3]',
             'password' => 'required|min_length[6]',
             'nis' => 'required|min_length[5]',
             'tempat_magang' => 'required|min_length[5]'
@@ -82,48 +77,63 @@ class Admin extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
         
+        // Cek apakah username sudah ada di semua tabel
+        if ($this->isUsernameExists($request->getPost('username'))) {
+            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
+        }
+        
+        // Cek apakah NIS sudah ada
+        if ($this->isNISExists($request->getPost('nis'))) {
+            return redirect()->back()->withInput()->with('error', 'NIS sudah terdaftar');
+        }
+        
         // Hash password
         $password = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
         
-        $userData = [
+        $siswaData = [
             'nama' => $request->getPost('nama'),
             'username' => $request->getPost('username'),
             'password' => $password,
-            'role' => 'siswa',
             'nis' => $request->getPost('nis'),
-            'tempat_magang' => $request->getPost('tempat_magang')
+            'tempat_magang' => $request->getPost('tempat_magang'),
+            'alamat_magang' => $request->getPost('tempat_magang'),
+            'status' => 'aktif'
         ];
         
-        if ($this->userModel->insert($userData)) {
+        if ($this->db->table('siswa')->insert($siswaData)) {
             return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil ditambahkan');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal menambahkan siswa');
         }
     }
 
-    public function editSiswa($id)
+    public function editSiswa($id = null)
     {
-        $siswa = $this->userModel->find($id);
-        if (!$siswa || $siswa['role'] !== 'siswa') {
+        if (!$id) {
+            return redirect()->to('/admin/kelola-siswa')->with('error', 'ID siswa tidak valid');
+        }
+        
+        $siswa = $this->db->table('siswa')->where('id', $id)->get()->getRowArray();
+        
+        if (!$siswa) {
             return redirect()->to('/admin/kelola-siswa')->with('error', 'Siswa tidak ditemukan');
         }
         
         $data = [
-            'title' => 'Edit Siswa - SIMAMANG',
+            'title' => 'Edit Data Siswa - SIMAMANG',
             'siswa' => $siswa
         ];
         
         return view('admin/form_siswa', $data);
     }
 
-    public function updateSiswa($id)
+    public function updateSiswa($id = null)
     {
-        $request = service('request');
-        $siswa = $this->userModel->find($id);
-        
-        if (!$siswa || $siswa['role'] !== 'siswa') {
-            return redirect()->to('/admin/kelola-siswa')->with('error', 'Siswa tidak ditemukan');
+        if (!$id) {
+            return redirect()->to('/admin/kelola-siswa')->with('error', 'ID siswa tidak valid');
         }
+        
+        $request = service('request');
         
         // Validasi input
         $rules = [
@@ -133,42 +143,48 @@ class Admin extends BaseController
             'tempat_magang' => 'required|min_length[5]'
         ];
         
-        // Cek username unik kecuali untuk user yang sedang diedit
-        if ($request->getPost('username') !== $siswa['username']) {
-            $rules['username'] .= '|is_unique[users.username]';
-        }
-        
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
         
-        $userData = [
+        // Cek apakah username sudah ada di tabel lain (kecuali siswa yang sedang diedit)
+        if ($this->isUsernameExists($request->getPost('username'), $id)) {
+            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
+        }
+        
+        // Cek apakah NIS sudah ada (kecuali siswa yang sedang diedit)
+        if ($this->isNISExists($request->getPost('nis'), $id)) {
+            return redirect()->back()->withInput()->with('error', 'NIS sudah terdaftar');
+        }
+        
+        $siswaData = [
             'nama' => $request->getPost('nama'),
             'username' => $request->getPost('username'),
             'nis' => $request->getPost('nis'),
-            'tempat_magang' => $request->getPost('tempat_magang')
+            'tempat_magang' => $request->getPost('tempat_magang'),
+            'alamat_magang' => $request->getPost('tempat_magang')
         ];
         
         // Update password jika diisi
         if ($request->getPost('password')) {
-            $userData['password'] = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
+            $siswaData['password'] = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
         }
         
-        if ($this->userModel->update($id, $userData)) {
+        if ($this->db->table('siswa')->where('id', $id)->update($siswaData)) {
             return redirect()->to('/admin/kelola-siswa')->with('success', 'Data siswa berhasil diupdate');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal mengupdate data siswa');
         }
     }
 
-    public function hapusSiswa($id)
+    public function hapusSiswa($id = null)
     {
-        $siswa = $this->userModel->find($id);
-        if (!$siswa || $siswa['role'] !== 'siswa') {
-            return redirect()->to('/admin/kelola-siswa')->with('error', 'Siswa tidak ditemukan');
+        if (!$id) {
+            return redirect()->to('/admin/kelola-siswa')->with('error', 'ID siswa tidak valid');
         }
         
-        if ($this->userModel->delete($id)) {
+        // Soft delete - ubah status menjadi nonaktif
+        if ($this->db->table('siswa')->where('id', $id)->update(['status' => 'nonaktif'])) {
             return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil dihapus');
         } else {
             return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus siswa');
@@ -177,7 +193,7 @@ class Admin extends BaseController
 
     public function kelolaPembimbing()
     {
-        $pembimbing = $this->userModel->where('role', 'pembimbing')->findAll();
+        $pembimbing = $this->db->table('pembimbing')->where('status', 'aktif')->get()->getResultArray();
         
         $data = [
             'title' => 'Kelola Data Pembimbing - SIMAMANG',
@@ -203,104 +219,181 @@ class Admin extends BaseController
         // Validasi input
         $rules = [
             'nama' => 'required|min_length[3]',
-            'username' => 'required|min_length[3]|is_unique[users.username]',
-            'password' => 'required|min_length[6]'
+            'username' => 'required|min_length[3]',
+            'password' => 'required|min_length[6]',
+            'instansi' => 'required|min_length[3]',
+            'jabatan' => 'required|min_length[3]'
         ];
         
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
         
+        // Cek apakah username sudah ada di semua tabel
+        if ($this->isUsernameExists($request->getPost('username'))) {
+            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
+        }
+        
         // Hash password
         $password = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
         
-        $userData = [
+        $pembimbingData = [
             'nama' => $request->getPost('nama'),
             'username' => $request->getPost('username'),
             'password' => $password,
-            'role' => 'pembimbing'
+            'email' => $request->getPost('email'),
+            'no_hp' => $request->getPost('no_hp'),
+            'alamat' => $request->getPost('alamat'),
+            'instansi' => $request->getPost('instansi'),
+            'jabatan' => $request->getPost('jabatan'),
+            'bidang_keahlian' => $request->getPost('bidang_keahlian'),
+            'status' => 'aktif'
         ];
         
-        if ($this->userModel->insert($userData)) {
+        if ($this->db->table('pembimbing')->insert($pembimbingData)) {
             return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil ditambahkan');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal menambahkan pembimbing');
         }
     }
 
-    public function aturBimbingan($pembimbingId)
+    public function editPembimbing($id = null)
     {
-        $pembimbing = $this->userModel->find($pembimbingId);
-        if (!$pembimbing || $pembimbing['role'] !== 'pembimbing') {
+        if (!$id) {
+            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'ID pembimbing tidak valid');
+        }
+        
+        $pembimbing = $this->db->table('pembimbing')->where('id', $id)->get()->getRowArray();
+        
+        if (!$pembimbing) {
             return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Pembimbing tidak ditemukan');
         }
-
-        $semuaSiswa = $this->userModel->where('role', 'siswa')->findAll();
-        $assignedIds = $this->pembimbingSiswaModel->getSiswaIdsForPembimbing($pembimbingId);
-
+        
         $data = [
-            'title' => 'Atur Bimbingan - SIMAMANG',
-            'pembimbing' => $pembimbing,
-            'semuaSiswa' => $semuaSiswa,
-            'assignedIds' => $assignedIds,
+            'title' => 'Edit Data Pembimbing - SIMAMANG',
+            'pembimbing' => $pembimbing
         ];
-
-        return view('admin/atur_bimbingan', $data);
+        
+        return view('admin/form_pembimbing', $data);
     }
 
-    public function simpanAturBimbingan($pembimbingId)
+    public function updatePembimbing($id = null)
     {
-        $pembimbing = $this->userModel->find($pembimbingId);
-        if (!$pembimbing || $pembimbing['role'] !== 'pembimbing') {
-            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Pembimbing tidak ditemukan');
+        if (!$id) {
+            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'ID pembimbing tidak valid');
         }
-
+        
         $request = service('request');
-        $siswaIds = $request->getPost('siswa_ids') ?? [];
-
-        // Reset assignment: hapus semua lalu insert yang dipilih
-        $this->pembimbingSiswaModel->where('pembimbing_id', $pembimbingId)->delete();
-        foreach ($siswaIds as $sid) {
-            $this->pembimbingSiswaModel->assignSiswaToPembimbing((int)$pembimbingId, (int)$sid);
+        
+        // Validasi input
+        $rules = [
+            'nama' => 'required|min_length[3]',
+            'username' => 'required|min_length[3]',
+            'instansi' => 'required|min_length[3]',
+            'jabatan' => 'required|min_length[3]'
+        ];
+        
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
+        
+        // Cek apakah username sudah ada di tabel lain (kecuali pembimbing yang sedang diedit)
+        if ($this->isUsernameExists($request->getPost('username'), $id)) {
+            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
+        }
+        
+        $pembimbingData = [
+            'nama' => $request->getPost('nama'),
+            'username' => $request->getPost('username'),
+            'email' => $request->getPost('email'),
+            'no_hp' => $request->getPost('no_hp'),
+            'alamat' => $request->getPost('alamat'),
+            'instansi' => $request->getPost('instansi'),
+            'jabatan' => $request->getPost('jabatan'),
+            'bidang_keahlian' => $request->getPost('bidang_keahlian')
+        ];
+        
+        // Update password jika diisi
+        if ($request->getPost('password')) {
+            $pembimbingData['password'] = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
+        }
+        
+        if ($this->db->table('pembimbing')->where('id', $id)->update($pembimbingData)) {
+            return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Data pembimbing berhasil diupdate');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Gagal mengupdate data pembimbing');
+        }
+    }
 
-        return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Bimbingan berhasil diperbarui');
+    public function hapusPembimbing($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'ID pembimbing tidak valid');
+        }
+        
+        // Soft delete - ubah status menjadi nonaktif
+        if ($this->db->table('pembimbing')->where('id', $id)->update(['status' => 'nonaktif'])) {
+            return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil dihapus');
+        } else {
+            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus pembimbing');
+        }
     }
 
     public function laporanMagang()
     {
-        $siswa = $this->userModel->where('role', 'siswa')->findAll();
+        $laporan = $this->db->table('laporan_magang')
+                            ->select('laporan_magang.*, siswa.nama as nama_siswa')
+                            ->join('siswa', 'siswa.id = laporan_magang.siswa_id')
+                            ->get()
+                            ->getResultArray();
         
         $data = [
             'title' => 'Laporan Magang - SIMAMANG',
-            'siswa' => $siswa
+            'laporan' => $laporan
         ];
         
         return view('admin/laporan_magang', $data);
     }
 
-    public function generateLaporanAdmin()
+    public function aturBimbingan()
     {
-        $request = service('request');
-        $siswaId = $request->getPost('siswa_id');
-        $startDate = $request->getPost('start_date');
-        $endDate = $request->getPost('end_date');
-        
-        if (!$siswaId || !$startDate || !$endDate) {
-            return redirect()->back()->with('error', 'Semua field harus diisi');
-        }
-        
-        $siswa = $this->userModel->find($siswaId);
-        $logs = $this->logModel->getLogByDateRange($siswaId, $startDate, $endDate);
-        
+        // Tampilkan halaman pengaturan bimbingan
         $data = [
-            'siswa' => $siswa,
-            'logs' => $logs,
-            'startDate' => $startDate,
-            'endDate' => $endDate
+            'title' => 'Atur Bimbingan - SIMAMANG'
         ];
         
-        // Untuk sementara, tampilkan preview
-        return view('admin/preview_laporan', $data);
+        return view('admin/atur_bimbingan', $data);
+    }
+
+    private function isUsernameExists($username, $excludeId = null)
+    {
+        // Cek di semua tabel
+        $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
+        $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
+        $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();
+        
+        // Jika ada excludeId, kurangi 1 dari count yang sesuai
+        if ($excludeId) {
+            // Cek di tabel mana excludeId berada
+            $adminCheck = $this->db->table('admin')->where('id', $excludeId)->countAllResults();
+            $pembimbingCheck = $this->db->table('pembimbing')->where('id', $excludeId)->countAllResults();
+            $siswaCheck = $this->db->table('siswa')->where('id', $excludeId)->countAllResults();
+            
+            if ($adminCheck > 0) $admin--;
+            elseif ($pembimbingCheck > 0) $pembimbing--;
+            elseif ($siswaCheck > 0) $siswa--;
+        }
+        
+        return ($admin > 0 || $pembimbing > 0 || $siswa > 0);
+    }
+
+    private function isNISExists($nis, $excludeId = null)
+    {
+        $query = $this->db->table('siswa')->where('nis', $nis);
+        if ($excludeId) {
+            $query->where('id !=', $excludeId);
+        }
+        return $query->countAllResults() > 0;
     }
 }
+

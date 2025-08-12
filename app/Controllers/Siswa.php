@@ -2,21 +2,17 @@
 
 namespace App\Controllers;
 
-use App\Models\LogAktivitasModel;
-use App\Models\UserModel;
-use CodeIgniter\HTTP\Files\UploadedFile;
+use CodeIgniter\Controller;
 
 class Siswa extends BaseController
 {
     protected $session;
-    protected $logModel;
-    protected $userModel;
+    protected $db;
 
     public function __construct()
     {
         $this->session = session();
-        $this->logModel = new LogAktivitasModel();
-        $this->userModel = new UserModel();
+        $this->db = \Config\Database::connect();
         
         // Cek apakah user sudah login dan role-nya siswa
         if (!$this->session->get('isLoggedIn') || $this->session->get('role') !== 'siswa') {
@@ -27,10 +23,18 @@ class Siswa extends BaseController
     public function dashboard()
     {
         $userId = $this->session->get('user_id');
-        $user = $this->userModel->find($userId);
+        $table = $this->session->get('table');
+        
+        // Ambil data user dari tabel yang sesuai
+        $user = $this->db->table($table)->where('id', $userId)->get()->getRowArray();
         
         // Ambil log terbaru (5 log terakhir)
-        $recentLogs = $this->logModel->getLogBySiswa($userId, 5);
+        $recentLogs = $this->db->table('log_aktivitas')
+                                ->where('siswa_id', $userId)
+                                ->orderBy('created_at', 'DESC')
+                                ->limit(5)
+                                ->get()
+                                ->getResultArray();
         
         $data = [
             'title' => 'Dashboard Siswa - SIMAMANG',
@@ -93,7 +97,7 @@ class Siswa extends BaseController
             'status' => 'menunggu'
         ];
         
-        if ($this->logModel->insert($logData)) {
+        if ($this->db->table('log_aktivitas')->insert($logData)) {
             return redirect()->to('/siswa/dashboard')->with('success', 'Log aktivitas berhasil disimpan');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal menyimpan log aktivitas');
@@ -103,7 +107,11 @@ class Siswa extends BaseController
     public function riwayat()
     {
         $userId = $this->session->get('user_id');
-        $logs = $this->logModel->getLogBySiswa($userId);
+        $logs = $this->db->table('log_aktivitas')
+                         ->where('siswa_id', $userId)
+                         ->orderBy('created_at', 'DESC')
+                         ->get()
+                         ->getResultArray();
         
         $data = [
             'title' => 'Riwayat Aktivitas - SIMAMANG',
@@ -116,7 +124,15 @@ class Siswa extends BaseController
     public function detailLog($id)
     {
         $userId = $this->session->get('user_id');
-        $log = $this->logModel->getLogWithKomentar($id);
+        
+        // Ambil log dengan komentar pembimbing
+        $log = $this->db->table('log_aktivitas')
+                        ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.rating, pembimbing.nama as nama_pembimbing')
+                        ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
+                        ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
+                        ->where('log_aktivitas.id', $id)
+                        ->get()
+                        ->getRowArray();
         
         // Pastikan log milik siswa yang sedang login
         if (!$log || $log['siswa_id'] != $userId) {
@@ -152,8 +168,15 @@ class Siswa extends BaseController
             return redirect()->back()->with('error', 'Tanggal awal dan akhir harus diisi');
         }
         
-        $user = $this->userModel->find($userId);
-        $logs = $this->logModel->getLogByDateRange($userId, $startDate, $endDate);
+        $table = $this->session->get('table');
+        $user = $this->db->table($table)->where('id', $userId)->get()->getRowArray();
+        $logs = $this->db->table('log_aktivitas')
+                         ->where('siswa_id', $userId)
+                         ->where('tanggal >=', $startDate)
+                         ->where('tanggal <=', $endDate)
+                         ->orderBy('tanggal', 'ASC')
+                         ->get()
+                         ->getResultArray();
         
         // Generate PDF (akan diimplementasikan nanti)
         $data = [

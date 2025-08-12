@@ -3,13 +3,13 @@
 
 // Konfigurasi koneksi DB (samakan dengan app/Config/Database.php)
 $host = "localhost";
-$port = "5432"; // default PostgreSQL
+$port = "3306"; // default MySQL
 $db   = "simamang"; // ganti dengan nama DB kamu
-$user = "postgres"; // ganti dengan username DB kamu
-$pass = "postgres"; // ganti dengan password DB kamu
+$user = "root"; // ganti dengan username DB kamu
+$pass = ""; // ganti dengan password DB kamu
 
 try {
-    $conn = new PDO("pgsql:host=$host;port=$port;dbname=$db", $user, $pass);
+    $conn = new PDO("mysql:host=$host;port=$port;dbname=$db", $user, $pass);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Data admin baru

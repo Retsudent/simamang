@@ -2,18 +2,17 @@
 
 namespace App\Controllers;
 
-use App\Models\UserModel;
 use CodeIgniter\Controller;
 
 class Auth extends Controller
 {
     protected $session;
-    protected $userModel;
+    protected $db;
 
     public function __construct()
     {
         $this->session = session();
-        $this->userModel = new UserModel();
+        $this->db = \Config\Database::connect();
     }
 
     public function login()
@@ -36,7 +35,9 @@ class Auth extends Controller
             return redirect()->back()->with('error', 'Username dan password wajib diisi')->withInput();
         }
 
-        $user = $this->userModel->findByUsername($username);
+        // Cek di semua tabel (admin, pembimbing, siswa)
+        $user = $this->findUserInAllTables($username);
+        
         if (!$user) {
             return redirect()->back()->with('error', 'User tidak ditemukan')->withInput();
         }
@@ -53,9 +54,54 @@ class Auth extends Controller
             'username'   => $user['username'],
             'nama'       => $user['nama'],
             'role'       => $user['role'],
+            'table'      => $user['table'] // tambahkan info tabel asal
         ]);
 
         return redirect()->to($this->roleRedirect($user['role']));
+    }
+
+    private function findUserInAllTables($username)
+    {
+        // Cek di tabel admin
+        $admin = $this->db->table('admin')
+                          ->where('username', $username)
+                          ->where('status', 'aktif')
+                          ->get()
+                          ->getRowArray();
+        
+        if ($admin) {
+            $admin['role'] = 'admin';
+            $admin['table'] = 'admin';
+            return $admin;
+        }
+
+        // Cek di tabel pembimbing
+        $pembimbing = $this->db->table('pembimbing')
+                               ->where('username', $username)
+                               ->where('status', 'aktif')
+                               ->get()
+                               ->getRowArray();
+        
+        if ($pembimbing) {
+            $pembimbing['role'] = 'pembimbing';
+            $pembimbing['table'] = 'pembimbing';
+            return $pembimbing;
+        }
+
+        // Cek di tabel siswa
+        $siswa = $this->db->table('siswa')
+                          ->where('username', $username)
+                          ->where('status', 'aktif')
+                          ->get()
+                          ->getRowArray();
+        
+        if ($siswa) {
+            $siswa['role'] = 'siswa';
+            $siswa['table'] = 'siswa';
+            return $siswa;
+        }
+
+        return null;
     }
 
     public function logout()
@@ -80,7 +126,7 @@ class Auth extends Controller
         
         $rules = [
             'nama' => 'required|min_length[3]',
-            'username' => 'required|min_length[3]|is_unique[users.username]',
+            'username' => 'required|min_length[3]',
             'password' => 'required|min_length[6]',
             'nis' => 'required|min_length[5]',
             'tempat_magang' => 'required|min_length[3]'
@@ -90,24 +136,50 @@ class Auth extends Controller
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
         
+        // Cek apakah username sudah ada di semua tabel
+        if ($this->isUsernameExists($request->getPost('username'))) {
+            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
+        }
+        
+        // Cek apakah NIS sudah ada
+        if ($this->isNISExists($request->getPost('nis'))) {
+            return redirect()->back()->withInput()->with('error', 'NIS sudah terdaftar');
+        }
+        
         $passwordHash = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
         
         $data = [
             'nama' => $request->getPost('nama'),
             'username' => $request->getPost('username'),
             'password' => $passwordHash,
-            'role' => 'siswa', // SELALU siswa, tidak bisa pilih role
             'nis' => $request->getPost('nis'),
             'tempat_magang' => $request->getPost('tempat_magang'),
+            'alamat_magang' => $request->getPost('tempat_magang'), // gunakan tempat_magang sebagai alamat
+            'status' => 'aktif'
         ];
 
         try {
-            $this->userModel->insert($data);
+            $this->db->table('siswa')->insert($data);
         } catch (\Throwable $e) {
             return redirect()->back()->withInput()->with('error', 'Gagal mendaftar: ' . $e->getMessage());
         }
 
         return redirect()->to('/login')->with('success', 'Registrasi berhasil, silakan login.');
+    }
+
+    private function isUsernameExists($username)
+    {
+        // Cek di semua tabel
+        $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
+        $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
+        $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();
+        
+        return ($admin > 0 || $pembimbing > 0 || $siswa > 0);
+    }
+
+    private function isNISExists($nis)
+    {
+        return $this->db->table('siswa')->where('nis', $nis)->countAllResults() > 0;
     }
 
     private function roleRedirect($role)
