@@ -118,15 +118,15 @@
                                                     <!-- Quick Stats -->
                                                     <div class="row text-center">
                                                         <div class="col-4">
-                                                            <div class="h6 mb-0 font-weight-bold text-primary">0</div>
+                                                            <div class="h6 mb-0 font-weight-bold text-primary"><?= (int)($s['total_log'] ?? 0) ?></div>
                                                             <small class="text-muted">Total Log</small>
                                                         </div>
                                                         <div class="col-4">
-                                                            <div class="h6 mb-0 font-weight-bold text-warning">0</div>
+                                                            <div class="h6 mb-0 font-weight-bold text-warning"><?= (int)($s['menunggu_count'] ?? 0) ?></div>
                                                             <small class="text-muted">Menunggu</small>
                                                         </div>
                                                         <div class="col-4">
-                                                            <div class="h6 mb-0 font-weight-bold text-success">0</div>
+                                                            <div class="h6 mb-0 font-weight-bold text-success"><?= (int)($s['disetujui_count'] ?? 0) ?></div>
                                                             <small class="text-muted">Disetujui</small>
                                                         </div>
                                                     </div>

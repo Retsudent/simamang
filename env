@@ -34,8 +34,7 @@ database.default.hostname = localhost
 database.default.database = simamang
 database.default.username = postgres
 database.default.password = postgres
-database.default.DBDriver = Postgre
-database.default.DBPrefix =
+database.default.DBDriver = PostgreSQL
 database.default.port = 5432
 
 # If you use MySQLi as tests, first update the values of Config\Database::$tests.

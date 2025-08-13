@@ -27,81 +27,91 @@ class Auth extends Controller
 
     public function loginProcess()
     {
-        $request = service('request');
-        $username = $request->getPost('username');
-        $password = $request->getPost('password');
+        try {
+            $request = service('request');
+            $username = $request->getPost('username');
+            $password = $request->getPost('password');
 
-        if (!$username || !$password) {
-            return redirect()->back()->with('error', 'Username dan password wajib diisi')->withInput();
+            if (!$username || !$password) {
+                return redirect()->back()->with('error', 'Username dan password wajib diisi')->withInput();
+            }
+
+            // Cek di semua tabel (admin, pembimbing, siswa)
+            $user = $this->findUserInAllTables($username);
+            
+            if (!$user) {
+                return redirect()->back()->with('error', 'User tidak ditemukan')->withInput();
+            }
+
+            // password hashing: gunakan password_hash saat menyimpan password
+            if (!password_verify($password, $user['password'])) {
+                return redirect()->back()->with('error', 'Password salah')->withInput();
+            }
+
+            // set session
+            $this->session->set([
+                'isLoggedIn' => true,
+                'user_id'    => $user['id'],
+                'username'   => $user['username'],
+                'nama'       => $user['nama'],
+                'role'       => $user['role'],
+                'table'      => $user['table'] // tambahkan info tabel asal
+            ]);
+
+            return redirect()->to($this->roleRedirect($user['role']));
+        } catch (\Exception $e) {
+            log_message('error', 'Login error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.')->withInput();
         }
-
-        // Cek di semua tabel (admin, pembimbing, siswa)
-        $user = $this->findUserInAllTables($username);
-        
-        if (!$user) {
-            return redirect()->back()->with('error', 'User tidak ditemukan')->withInput();
-        }
-
-        // password hashing: gunakan password_hash saat menyimpan password
-        if (!password_verify($password, $user['password'])) {
-            return redirect()->back()->with('error', 'Password salah')->withInput();
-        }
-
-        // set session
-        $this->session->set([
-            'isLoggedIn' => true,
-            'user_id'    => $user['id'],
-            'username'   => $user['username'],
-            'nama'       => $user['nama'],
-            'role'       => $user['role'],
-            'table'      => $user['table'] // tambahkan info tabel asal
-        ]);
-
-        return redirect()->to($this->roleRedirect($user['role']));
     }
 
     private function findUserInAllTables($username)
     {
-        // Cek di tabel admin
-        $admin = $this->db->table('admin')
-                          ->where('username', $username)
-                          ->where('status', 'aktif')
-                          ->get()
-                          ->getRowArray();
-        
-        if ($admin) {
-            $admin['role'] = 'admin';
-            $admin['table'] = 'admin';
-            return $admin;
-        }
+        try {
+            // Cek di tabel admin
+            $admin = $this->db->table('admin')
+                              ->where('username', $username)
+                              ->where('status', 'aktif')
+                              ->get()
+                              ->getRowArray();
+            
+            if ($admin) {
+                $admin['role'] = 'admin';
+                $admin['table'] = 'admin';
+                return $admin;
+            }
 
-        // Cek di tabel pembimbing
-        $pembimbing = $this->db->table('pembimbing')
-                               ->where('username', $username)
-                               ->where('status', 'aktif')
-                               ->get()
-                               ->getRowArray();
-        
-        if ($pembimbing) {
-            $pembimbing['role'] = 'pembimbing';
-            $pembimbing['table'] = 'pembimbing';
-            return $pembimbing;
-        }
+            // Cek di tabel pembimbing
+            $pembimbing = $this->db->table('pembimbing')
+                                   ->where('username', $username)
+                                   ->where('status', 'aktif')
+                                   ->get()
+                                   ->getRowArray();
+            
+            if ($pembimbing) {
+                $pembimbing['role'] = 'pembimbing';
+                $pembimbing['table'] = 'pembimbing';
+                return $pembimbing;
+            }
 
-        // Cek di tabel siswa
-        $siswa = $this->db->table('siswa')
-                          ->where('username', $username)
-                          ->where('status', 'aktif')
-                          ->get()
-                          ->getRowArray();
-        
-        if ($siswa) {
-            $siswa['role'] = 'siswa';
-            $siswa['table'] = 'siswa';
-            return $siswa;
-        }
+            // Cek di tabel siswa
+            $siswa = $this->db->table('siswa')
+                              ->where('username', $username)
+                              ->where('status', 'aktif')
+                              ->get()
+                              ->getRowArray();
+            
+            if ($siswa) {
+                $siswa['role'] = 'siswa';
+                $siswa['table'] = 'siswa';
+                return $siswa;
+            }
 
-        return null;
+            return null;
+        } catch (\Exception $e) {
+            log_message('error', 'Database error in findUserInAllTables: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function logout()
@@ -128,6 +138,7 @@ class Auth extends Controller
             'nama' => 'required|min_length[3]',
             'username' => 'required|min_length[3]',
             'password' => 'required|min_length[6]',
+            'confirm_password' => 'required|matches[password]',
             'nis' => 'required|min_length[5]',
             'tempat_magang' => 'required|min_length[3]'
         ];
@@ -154,7 +165,7 @@ class Auth extends Controller
             'password' => $passwordHash,
             'nis' => $request->getPost('nis'),
             'tempat_magang' => $request->getPost('tempat_magang'),
-            'alamat_magang' => $request->getPost('tempat_magang'), // gunakan tempat_magang sebagai alamat
+            'alamat_magang' => $request->getPost('alamat_magang') ?: $request->getPost('tempat_magang'),
             'status' => 'aktif'
         ];
 

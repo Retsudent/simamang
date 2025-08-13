@@ -33,7 +33,7 @@
                 <td><?= esc($row['nama']) ?></td>
                 <td><?= esc($row['username']) ?></td>
                 <td>
-                  <a href="<?= base_url('admin/atur-bimbingan/' . $row['id']) ?>" class="btn btn-sm btn-info">Atur Bimbingan</a>
+                  <a href="<?= base_url('admin/atur-bimbingan-pembimbing/' . $row['id']) ?>" class="btn btn-sm btn-info">Atur Bimbingan</a>
                 </td>
               </tr>
             <?php endforeach; else: ?>

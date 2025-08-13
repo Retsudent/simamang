@@ -5,20 +5,20 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0 text-gray-800">Detail Log Aktivitas Siswa</h1>
-                <div>
-                    <a href="<?= base_url('pembimbing/aktivitas-siswa') ?>" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-2"></i>Kembali ke Daftar Siswa
-                    </a>
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0">Detail Log Aktivitas Siswa</h1>
+                    <div>
+                        <a href="<?= base_url('pembimbing/aktivitas-siswa') ?>" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Kembali ke Daftar Siswa
+                        </a>
+                    </div>
                 </div>
-            </div>
 
             <!-- Student Info -->
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
+                <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-user-graduate mr-2"></i>Informasi Siswa
+                        <i class="bi bi-person-badge"></i> Informasi Siswa
                     </h6>
                 </div>
                 <div class="card-body">
@@ -77,9 +77,9 @@
 
             <!-- Activity Details -->
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
+                <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-tasks mr-2"></i>Detail Aktivitas
+                        <i class="bi bi-list-task"></i> Detail Aktivitas
                     </h6>
                 </div>
                 <div class="card-body">
@@ -90,13 +90,13 @@
                     <?php if ($log['bukti']): ?>
                         <div class="mt-3">
                             <h6 class="text-info">
-                                <i class="fas fa-paperclip mr-2"></i>Bukti Aktivitas
+                                <i class="bi bi-paperclip"></i> Bukti Aktivitas
                             </h6>
                             <div class="bg-light p-3 rounded">
                                 <p class="mb-2"><strong>File:</strong> <?= $log['bukti'] ?></p>
                                 <a href="<?= base_url('uploads/bukti/' . $log['bukti']) ?>" 
                                    class="btn btn-sm btn-info" target="_blank">
-                                    <i class="fas fa-download mr-1"></i>Download Bukti
+                                    <i class="bi bi-download"></i> Download Bukti
                                 </a>
                             </div>
                         </div>
@@ -106,9 +106,9 @@
 
             <!-- Review & Comment Form -->
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
+                <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-comment mr-2"></i>Review & Komentar
+                        <i class="bi bi-chat-dots"></i> Review & Komentar
                     </h6>
                 </div>
                 <div class="card-body">
@@ -154,12 +154,12 @@
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <a href="<?= base_url('pembimbing/aktivitas-siswa') ?>" class="btn btn-secondary btn-block">
-                                    <i class="fas fa-arrow-left mr-2"></i>Kembali
+                                    <i class="bi bi-arrow-left"></i> Kembali
                                 </a>
                             </div>
                             <div class="col-md-6">
                                 <button type="submit" class="btn btn-success btn-block">
-                                    <i class="fas fa-save mr-2"></i>Simpan Review
+                                    <i class="bi bi-check-circle"></i> Simpan Review
                                 </button>
                             </div>
                         </div>
@@ -170,11 +170,11 @@
             <!-- Previous Comments -->
             <?php if (isset($log['komentar']) && $log['komentar']): ?>
                 <div class="card shadow mb-4 border-left-success">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-success">
-                            <i class="fas fa-history mr-2"></i>Komentar Sebelumnya
-                        </h6>
-                    </div>
+                                    <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="bi bi-clock-history"></i> Komentar Sebelumnya
+                    </h6>
+                </div>
                     <div class="card-body">
                         <div class="bg-light p-4 rounded">
                             <p class="mb-0" style="white-space: pre-wrap;"><?= $log['komentar'] ?></p>
@@ -190,31 +190,31 @@
 
             <!-- Quick Actions -->
             <div class="card shadow">
-                <div class="card-header py-3">
+                <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-bolt mr-2"></i>Aksi Cepat
+                        <i class="bi bi-lightning"></i> Aksi Cepat
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <a href="<?= base_url('pembimbing/log-siswa/' . $siswa['id']) ?>" class="btn btn-primary btn-block">
-                                <i class="fas fa-clipboard-list mr-2"></i>Lihat Semua Log
+                                <i class="bi bi-clipboard-list"></i> Lihat Semua Log
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
                             <a href="<?= base_url('pembimbing/aktivitas-siswa') ?>" class="btn btn-info btn-block">
-                                <i class="fas fa-users mr-2"></i>Daftar Siswa
+                                <i class="bi bi-people"></i> Daftar Siswa
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
                             <a href="<?= base_url('pembimbing/dashboard') ?>" class="btn btn-secondary btn-block">
-                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                                <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
                             <a href="<?= base_url('logout') ?>" class="btn btn-danger btn-block">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                <i class="bi bi-box-arrow-right"></i> Logout
                             </a>
                         </div>
                     </div>

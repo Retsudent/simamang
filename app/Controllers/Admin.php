@@ -341,28 +341,170 @@ class Admin extends BaseController
 
     public function laporanMagang()
     {
-        $laporan = $this->db->table('laporan_magang')
-                            ->select('laporan_magang.*, siswa.nama as nama_siswa')
-                            ->join('siswa', 'siswa.id = laporan_magang.siswa_id')
-                            ->get()
-                            ->getResultArray();
+        // Ambil semua siswa aktif untuk dropdown
+        $siswa = $this->db->table('siswa')
+                          ->where('status', 'aktif')
+                          ->get()
+                          ->getResultArray();
+        
+        // Hitung statistik
+        $totalLog = $this->db->table('log_aktivitas')->countAllResults();
+        $logDisetujui = $this->db->table('log_aktivitas')->where('status', 'disetujui')->countAllResults();
+        $logMenunggu = $this->db->table('log_aktivitas')->where('status', 'menunggu')->countAllResults();
         
         $data = [
             'title' => 'Laporan Magang - SIMAMANG',
-            'laporan' => $laporan
+            'siswa' => $siswa,
+            'totalLog' => $totalLog,
+            'logDisetujui' => $logDisetujui,
+            'logMenunggu' => $logMenunggu
         ];
         
         return view('admin/laporan_magang', $data);
     }
 
+    public function generateLaporanAdmin()
+    {
+        $request = service('request');
+        $siswaId = $request->getPost('siswa_id');
+        $startDate = $request->getPost('start_date');
+        $endDate = $request->getPost('end_date');
+        
+        if (!$siswaId || !$startDate || !$endDate) {
+            return redirect()->back()->with('error', 'Semua field harus diisi');
+        }
+        
+        // Ambil data siswa
+        $siswa = $this->db->table('siswa')
+                          ->where('id', $siswaId)
+                          ->get()
+                          ->getRowArray();
+        
+        if (!$siswa) {
+            return redirect()->back()->with('error', 'Siswa tidak ditemukan');
+        }
+        
+        // Ambil log aktivitas dalam rentang tanggal
+        $logAktivitas = $this->db->table('log_aktivitas')
+                                 ->where('siswa_id', $siswaId)
+                                 ->where('tanggal >=', $startDate)
+                                 ->where('tanggal <=', $endDate)
+                                 ->orderBy('tanggal', 'ASC')
+                                 ->get()
+                                 ->getResultArray();
+        
+        // Ambil komentar pembimbing
+        $komentarPembimbing = $this->db->table('komentar_pembimbing')
+                                       ->select('komentar_pembimbing.*, pembimbing.nama as nama_pembimbing')
+                                       ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id')
+                                       ->whereIn('log_id', array_column($logAktivitas, 'id'))
+                                       ->get()
+                                       ->getResultArray();
+        
+        $data = [
+            'title' => 'Laporan Magang - ' . $siswa['nama'],
+            'siswa' => $siswa,
+            'logAktivitas' => $logAktivitas,
+            'komentarPembimbing' => $komentarPembimbing,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ];
+        
+        return view('admin/preview_laporan', $data);
+    }
+
     public function aturBimbingan()
     {
-        // Tampilkan halaman pengaturan bimbingan
+        // Ambil semua pembimbing aktif
+        $pembimbing = $this->db->table('pembimbing')
+                               ->where('status', 'aktif')
+                               ->get()
+                               ->getResultArray();
+        
+        // Ambil semua siswa aktif
+        $siswa = $this->db->table('siswa')
+                          ->where('status', 'aktif')
+                          ->get()
+                          ->getResultArray();
+        
         $data = [
-            'title' => 'Atur Bimbingan - SIMAMANG'
+            'title' => 'Atur Bimbingan - SIMAMANG',
+            'pembimbing' => $pembimbing,
+            'siswa' => $siswa
         ];
         
         return view('admin/atur_bimbingan', $data);
+    }
+
+    public function aturBimbinganPembimbing($pembimbingId = null)
+    {
+        if (!$pembimbingId) {
+            return redirect()->to('/admin/atur-bimbingan')->with('error', 'ID Pembimbing tidak valid');
+        }
+        
+        // Ambil data pembimbing
+        $pembimbing = $this->db->table('pembimbing')
+                               ->where('id', $pembimbingId)
+                               ->where('status', 'aktif')
+                               ->get()
+                               ->getRowArray();
+        
+        if (!$pembimbing) {
+            return redirect()->to('/admin/atur-bimbingan')->with('error', 'Pembimbing tidak ditemukan');
+        }
+        
+        // Ambil semua siswa aktif
+        $semuaSiswa = $this->db->table('siswa')
+                               ->where('status', 'aktif')
+                               ->get()
+                               ->getResultArray();
+        
+        // Ambil siswa yang sudah dibimbing oleh pembimbing ini
+        $assignedSiswa = $this->db->table('siswa')
+                                  ->where('pembimbing_id', $pembimbingId)
+                                  ->where('status', 'aktif')
+                                  ->get()
+                                  ->getResultArray();
+        
+        $assignedIds = array_column($assignedSiswa, 'id');
+        
+        $data = [
+            'title' => 'Atur Bimbingan - ' . $pembimbing['nama'],
+            'pembimbing' => $pembimbing,
+            'semuaSiswa' => $semuaSiswa,
+            'assignedIds' => $assignedIds
+        ];
+        
+        return view('admin/atur_bimbingan_pembimbing', $data);
+    }
+
+    public function simpanAturBimbingan($pembimbingId = null)
+    {
+        if (!$pembimbingId) {
+            return redirect()->to('/admin/atur-bimbingan')->with('error', 'ID Pembimbing tidak valid');
+        }
+        
+        $request = service('request');
+        $siswaIds = $request->getPost('siswa_ids') ?? [];
+        
+        try {
+            // Reset semua pembimbing_id untuk pembimbing ini
+            $this->db->table('siswa')
+                     ->where('pembimbing_id', $pembimbingId)
+                     ->update(['pembimbing_id' => null]);
+            
+            // Set pembimbing_id baru untuk siswa yang dipilih
+            if (!empty($siswaIds)) {
+                $this->db->table('siswa')
+                         ->whereIn('id', $siswaIds)
+                         ->update(['pembimbing_id' => $pembimbingId]);
+            }
+            
+            return redirect()->to('/admin/atur-bimbingan')->with('success', 'Pengaturan bimbingan berhasil disimpan');
+        } catch (\Exception $e) {
+            log_message('error', 'Error in simpanAturBimbingan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
+        }
     }
 
     private function isUsernameExists($username, $excludeId = null)

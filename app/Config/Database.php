@@ -25,24 +25,31 @@ class Database extends Config
      * @var array<string, mixed>
      */
     public array $default = [
-        'DSN'       => '',
-        'hostname'  => 'localhost',
-        'username'  => 'root',       // username default XAMPP
-        'password'  => '',           // password kosong untuk XAMPP default
-        'database'  => 'simamang',   // nama database mu
-        'DBDriver'  => 'MySQLi',     // menggunakan MySQL yang tersedia di XAMPP
-        'DBPrefix'  => '',
-        'pConnect'  => false,
-        'DBDebug'   => true,
-        'charset'   => 'utf8',
-        'DBCollat'  => 'utf8_general_ci',
-        'swapPre'   => '',
-        'encrypt'   => false,
-        'compress'  => false,
-        'strictOn'  => false,
-        'failover'  => [],
-        'port'      => 3306,         // port default MySQL
+        'DSN'        => '',
+        'hostname'   => 'localhost',     // atau IP server PostgreSQL
+        'username'   => 'postgres',      // username default PostgreSQL
+        'password'   => 'postgres',      // ganti dengan password PostgreSQL kamu
+        'database'   => 'simamang',      // nama database di PostgreSQL
+        'schema'     => 'public',        // schema default PostgreSQL
+        'DBDriver'   => 'Postgre',       // driver PostgreSQL
+        'DBPrefix'   => '',
+        'pConnect'   => false,
+        'DBDebug'    => true,
+        'charset'    => 'utf8',
+        'DBCollat'   => 'utf8_general_ci',
+        'swapPre'    => '',
+        'encrypt'    => false,
+        'compress'   => false,
+        'strictOn'   => false,
+        'failover'   => [],
+        'port'       => 5432,            // port default PostgreSQL
+        'dateFormat' => [
+            'date'     => 'Y-m-d',
+            'datetime' => 'Y-m-d H:i:s',
+            'time'     => 'H:i:s',
+        ],
     ];
+
 
     //    /**
     //     * Sample database connection for SQLite3.

@@ -18,7 +18,7 @@ $routes->get('register', 'Auth::register');
 $routes->post('register', 'Auth::registerProcess');
 
 // Siswa routes
-$routes->group('siswa', ['filter' => 'auth'], function($routes) {
+$routes->group('siswa', ['filter' => 'auth:siswa'], function($routes) {
     $routes->get('dashboard', 'Siswa::dashboard');
     $routes->get('input-log', 'Siswa::inputLog');
     $routes->post('save-log', 'Siswa::saveLog');
@@ -29,7 +29,7 @@ $routes->group('siswa', ['filter' => 'auth'], function($routes) {
 });
 
 // Pembimbing routes
-$routes->group('pembimbing', ['filter' => 'auth'], function($routes) {
+$routes->group('pembimbing', ['filter' => 'auth:pembimbing'], function($routes) {
     $routes->get('dashboard', 'Pembimbing::dashboard');
     $routes->get('aktivitas-siswa', 'Pembimbing::aktivitasSiswa');
     $routes->get('log-siswa/(:num)', 'Pembimbing::logSiswa/$1');
@@ -38,8 +38,22 @@ $routes->group('pembimbing', ['filter' => 'auth'], function($routes) {
     $routes->post('validasi-log', 'Pembimbing::validasiLog');
 });
 
+// File upload route
+$routes->get('uploads/bukti/(:segment)', function($filename) {
+    $filepath = WRITEPATH . 'uploads/bukti/' . $filename;
+    if (file_exists($filepath)) {
+        $mime = mime_content_type($filepath);
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+        readfile($filepath);
+        exit;
+    } else {
+        throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan');
+    }
+});
+
 // Admin routes
-$routes->group('admin', ['filter' => 'auth'], function($routes) {
+$routes->group('admin', ['filter' => 'auth:admin'], function($routes) {
     $routes->get('dashboard', 'Admin::dashboard');
     
     // Kelola Siswa
@@ -54,8 +68,12 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
     $routes->get('kelola-pembimbing', 'Admin::kelolaPembimbing');
     $routes->get('tambah-pembimbing', 'Admin::tambahPembimbing');
     $routes->post('simpan-pembimbing', 'Admin::simpanPembimbing');
+    $routes->get('edit-pembimbing/(:num)', 'Admin::editPembimbing/$1');
+    $routes->post('update-pembimbing/(:num)', 'Admin::updatePembimbing/$1');
+    $routes->get('hapus-pembimbing/(:num)', 'Admin::hapusPembimbing/$1');
     // Atur bimbingan siswa untuk pembimbing
-    $routes->get('atur-bimbingan/(:num)', 'Admin::aturBimbingan/$1');
+    $routes->get('atur-bimbingan', 'Admin::aturBimbingan');
+    $routes->get('atur-bimbingan-pembimbing/(:num)', 'Admin::aturBimbinganPembimbing/$1');
     $routes->post('simpan-atur-bimbingan/(:num)', 'Admin::simpanAturBimbingan/$1');
     
     // Laporan

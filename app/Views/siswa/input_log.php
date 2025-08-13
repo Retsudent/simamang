@@ -1,133 +1,195 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<div class="container">
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Input Log Aktivitas Harian</h2>
+                    <p class="text-muted mb-0">Catat aktivitas magang Anda hari ini dengan detail yang lengkap</p>
+                </div>
+                <a href="<?= base_url('siswa/dashboard') ?>" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Input Log Aktivitas Harian</h6>
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-journal-plus"></i>
+                    Form Input Log Aktivitas
                 </div>
                 <div class="card-body">
-                    <?php if (session()->getFlashdata('error')): ?>
-                        <div class="alert alert-danger">
-                            <?= session()->getFlashdata('error') ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (session()->getFlashdata('errors')): ?>
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                <?php foreach (session()->getFlashdata('errors') as $error): ?>
-                                    <li><?= $error ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                    <?php endif; ?>
-
-                    <form action="<?= base_url('siswa/save-log') ?>" method="post" enctype="multipart/form-data">
-                        <div class="row">
+                    <form action="<?= base_url('siswa/save-log') ?>" method="post" enctype="multipart/form-data" id="logForm">
+                        <?= csrf_field() ?>
+                        
+                        <!-- Date and Time Section -->
+                        <div class="row mb-4">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="tanggal">Tanggal <span class="text-danger">*</span></label>
+                                <div class="form-floating">
                                     <input type="date" class="form-control" id="tanggal" name="tanggal" 
-                                           value="<?= old('tanggal', date('Y-m-d')) ?>" required>
+                                           value="<?= date('Y-m-d') ?>" required>
+                                    <label for="tanggal">
+                                        <i class="bi bi-calendar me-2"></i>Tanggal Aktivitas
+                                    </label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="jam_mulai">Jam Mulai <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" id="jam_mulai" name="jam_mulai" 
-                                           value="<?= old('jam_mulai') ?>" required>
+                                <div class="form-floating">
+                                    <input type="time" class="form-control" id="jam_mulai" name="jam_mulai" required>
+                                    <label for="jam_mulai">
+                                        <i class="bi bi-clock me-2"></i>Jam Mulai
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row mb-4">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="jam_selesai">Jam Selesai <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" id="jam_selesai" name="jam_selesai" 
-                                           value="<?= old('jam_selesai') ?>" required>
+                                <div class="form-floating">
+                                    <input type="time" class="form-control" id="jam_selesai" name="jam_selesai" required>
+                                    <label for="jam_selesai">
+                                        <i class="bi bi-clock-fill me-2"></i>Jam Selesai
+                                    </label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="bukti">Bukti Aktivitas (Opsional)</label>
-                                    <input type="file" class="form-control-file" id="bukti" name="bukti" 
-                                           accept="image/*,.pdf,.doc,.docx">
-                                    <small class="form-text text-muted">
-                                        Format yang didukung: JPG, PNG, PDF, DOC, DOCX. Maksimal 2MB.
-                                    </small>
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="durasi" readonly>
+                                    <label for="durasi">
+                                        <i class="bi bi-stopwatch me-2"></i>Durasi Aktivitas
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="uraian">Uraian Aktivitas <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="uraian" name="uraian" rows="6" 
-                                      placeholder="Jelaskan detail aktivitas yang Anda lakukan hari ini..." 
-                                      required><?= old('uraian') ?></textarea>
-                            <small class="form-text text-muted">
-                                Minimal 10 karakter. Jelaskan dengan detail apa yang Anda lakukan, 
-                                apa yang Anda pelajari, dan bagaimana Anda mengaplikasikan pengetahuan tersebut.
-                            </small>
+                        <!-- Activity Description -->
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="uraian" name="uraian" rows="6" 
+                                          placeholder="Jelaskan detail aktivitas yang Anda lakukan hari ini..." required></textarea>
+                                <label for="uraian">
+                                    <i class="bi bi-text-paragraph me-2"></i>Uraian Aktivitas
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Jelaskan secara detail aktivitas yang Anda lakukan, termasuk:
+                                <ul class="mt-2 mb-0">
+                                    <li>Tugas atau proyek yang dikerjakan</li>
+                                    <li>Teknologi atau tools yang digunakan</li>
+                                    <li>Kendala yang dihadapi dan solusinya</li>
+                                    <li>Pelajaran atau pengalaman yang didapat</li>
+                                </ul>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="konfirmasi" required>
-                                <label class="custom-control-label" for="konfirmasi">
+                        <!-- File Upload -->
+                        <div class="mb-4">
+                            <label for="bukti" class="form-label">
+                                <i class="bi bi-paperclip me-2"></i>Bukti Aktivitas (Opsional)
+                            </label>
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-content">
+                                    <i class="bi bi-cloud-upload text-muted" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mb-2">Drag & drop file di sini atau klik untuk memilih</p>
+                                    <p class="text-muted small mb-0">
+                                        Format: PDF, JPG, PNG, DOC, DOCX (Maks. 2MB)
+                                    </p>
+                                </div>
+                                <input type="file" class="form-control" id="bukti" name="bukti" 
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;">
+                            </div>
+                            <div id="filePreview" class="mt-3" style="display: none;">
+                                <div class="selected-file">
+                                    <i class="bi bi-file-earmark-text me-2"></i>
+                                    <span id="fileName"></span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="removeFile">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirmation -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="konfirmasi" required>
+                                <label class="form-check-label" for="konfirmasi">
                                     Saya menyatakan bahwa informasi yang saya berikan adalah benar dan akurat
                                 </label>
                             </div>
                         </div>
 
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <a href="<?= base_url('siswa/dashboard') ?>" class="btn btn-secondary btn-block">
-                                    <i class="fas fa-arrow-left mr-2"></i>Kembali ke Dashboard
-                                </a>
-                            </div>
-                            <div class="col-md-6">
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-save mr-2"></i>Simpan Log Aktivitas
-                                </button>
-                            </div>
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Simpan Log Aktivitas
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Reset Form
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
 
             <!-- Tips Section -->
-            <div class="card shadow mt-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-lightbulb mr-2"></i>Tips Menulis Log Aktivitas
-                    </h6>
+            <div class="card mt-4">
+                <div class="card-header">
+                    <i class="bi bi-lightbulb"></i>
+                    Tips Menulis Log Aktivitas yang Baik
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h6 class="text-primary">Yang Harus Ditulis:</h6>
-                            <ul class="text-muted">
-                                <li>Deskripsi tugas yang dikerjakan</li>
-                                <li>Alat atau software yang digunakan</li>
-                                <li>Masalah yang dihadapi dan solusinya</li>
-                                <li>Pelajaran yang didapat</li>
+                            <h6 class="text-primary mb-3">✅ Yang Harus Dilakukan:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    Tulis dengan detail dan spesifik
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    Sertakan teknologi/tools yang digunakan
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    Jelaskan hasil atau output yang dihasilkan
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    Tulis pembelajaran yang didapat
+                                </li>
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="text-success">Contoh Format:</h6>
-                            <div class="bg-light p-3 rounded">
-                                <small class="text-muted">
-                                    "Hari ini saya belajar membuat database menggunakan MySQL. 
-                                    Saya membuat tabel users dengan field id, nama, email, dan password. 
-                                    Saya juga belajar tentang primary key dan foreign key. 
-                                    Masalah yang saya hadapi adalah syntax error saat membuat foreign key, 
-                                    tapi akhirnya bisa diselesaikan dengan bantuan dokumentasi."
-                                </small>
-                            </div>
+                            <h6 class="text-warning mb-3">❌ Yang Harus Dihindari:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                    Menulis terlalu singkat dan tidak jelas
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                    Menggunakan bahasa yang tidak formal
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                    Tidak menyertakan detail teknis
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                    Menyalin log dari hari sebelumnya
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -136,22 +198,188 @@
     </div>
 </div>
 
+<style>
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--background-light);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-light);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.upload-area.dragover {
+    border-color: var(--primary-color);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.selected-file {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--background-light);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.form-check-input:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+.form-text {
+    background: var(--background-light);
+    border-left: 4px solid var(--primary-light);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.form-text ul {
+    padding-left: 1.5rem;
+}
+
+.form-text li {
+    margin-bottom: 0.25rem;
+}
+</style>
+
 <script>
-// Set default tanggal ke hari ini
-document.addEventListener('DOMContentLoaded', function() {
-    if (!document.getElementById('tanggal').value) {
-        document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+// Duration calculation
+function calculateDuration() {
+    const startTime = document.getElementById('jam_mulai').value;
+    const endTime = document.getElementById('jam_selesai').value;
+    
+    if (startTime && endTime) {
+        const start = new Date(`2000-01-01T${startTime}`);
+        const end = new Date(`2000-01-01T${endTime}`);
+        
+        if (end < start) {
+            end.setDate(end.getDate() + 1);
+        }
+        
+        const diff = end - start;
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        document.getElementById('durasi').value = `${hours} jam ${minutes} menit`;
+    }
+}
+
+document.getElementById('jam_mulai').addEventListener('change', calculateDuration);
+document.getElementById('jam_selesai').addEventListener('change', calculateDuration);
+
+// File upload handling
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('bukti');
+const filePreview = document.getElementById('filePreview');
+const fileName = document.getElementById('fileName');
+const removeFile = document.getElementById('removeFile');
+
+uploadArea.addEventListener('click', () => fileInput.click());
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFile(files[0]);
     }
 });
 
-// Validasi jam selesai harus lebih besar dari jam mulai
-document.getElementById('jam_selesai').addEventListener('change', function() {
-    const jamMulai = document.getElementById('jam_mulai').value;
-    const jamSelesai = this.value;
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+    }
+});
+
+function handleFile(file) {
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('File terlalu besar. Maksimal 2MB.');
+        return;
+    }
     
-    if (jamMulai && jamSelesai && jamSelesai <= jamMulai) {
-        alert('Jam selesai harus lebih besar dari jam mulai!');
-        this.value = '';
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('Format file tidak didukung. Gunakan PDF, JPG, PNG, DOC, atau DOCX.');
+        return;
+    }
+    
+    fileName.textContent = file.name;
+    filePreview.style.display = 'block';
+    uploadArea.style.display = 'none';
+}
+
+removeFile.addEventListener('click', () => {
+    fileInput.value = '';
+    filePreview.style.display = 'none';
+    uploadArea.style.display = 'block';
+});
+
+// Form validation
+document.getElementById('logForm').addEventListener('submit', function(e) {
+    const uraian = document.getElementById('uraian').value.trim();
+    const konfirmasi = document.getElementById('konfirmasi').checked;
+    
+    if (uraian.length < 50) {
+        e.preventDefault();
+        alert('Uraian aktivitas minimal 50 karakter. Silakan jelaskan aktivitas Anda dengan lebih detail.');
+        return;
+    }
+    
+    if (!konfirmasi) {
+        e.preventDefault();
+        alert('Anda harus menyetujui pernyataan sebelum menyimpan log aktivitas.');
+        return;
+    }
+});
+
+// Auto-save draft (optional)
+let autoSaveTimer;
+document.getElementById('uraian').addEventListener('input', function() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+        const formData = new FormData(document.getElementById('logForm'));
+        localStorage.setItem('logDraft', JSON.stringify({
+            tanggal: formData.get('tanggal'),
+            jam_mulai: formData.get('jam_mulai'),
+            jam_selesai: formData.get('jam_selesai'),
+            uraian: formData.get('uraian')
+        }));
+    }, 2000);
+});
+
+// Load draft on page load
+window.addEventListener('load', function() {
+    const draft = localStorage.getItem('logDraft');
+    if (draft) {
+        const data = JSON.parse(draft);
+        if (data.uraian) {
+            document.getElementById('uraian').value = data.uraian;
+        }
     }
 });
 </script>
