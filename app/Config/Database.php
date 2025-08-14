@@ -25,30 +25,33 @@ class Database extends Config
      * @var array<string, mixed>
      */
     public array $default = [
-        'DSN'        => '',
-        'hostname'   => 'localhost',     // atau IP server PostgreSQL
-        'username'   => 'postgres',      // username default PostgreSQL
-        'password'   => 'postgres',      // ganti dengan password PostgreSQL kamu
-        'database'   => 'simamang',      // nama database di PostgreSQL
-        'schema'     => 'public',        // schema default PostgreSQL
-        'DBDriver'   => 'Postgre',       // driver PostgreSQL
-        'DBPrefix'   => '',
-        'pConnect'   => false,
-        'DBDebug'    => true,
-        'charset'    => 'utf8',
-        'DBCollat'   => 'utf8_general_ci',
-        'swapPre'    => '',
-        'encrypt'    => false,
-        'compress'   => false,
-        'strictOn'   => false,
-        'failover'   => [],
-        'port'       => 5432,            // port default PostgreSQL
+        'DSN'      => '',
+        'hostname' => 'localhost',
+        'username' => 'root',
+        'password' => '',
+        'database' => 'simamang',
+        'DBDriver' => 'MySQLi',
+        'DBPrefix' => '',
+        'pConnect' => false,
+        'DBDebug'  => (ENVIRONMENT !== 'production'),
+        'charset'  => 'utf8',
+        'DBCollat' => 'utf8_general_ci',
+        'swapPre'  => '',
+        'encrypt'  => false,
+        'compress' => false,
+        'strictOn' => false,
+        'failover' => [],
+        'port'     => 3306,
+        'connect_timeout' => 10,
+        'read_timeout' => 30,
+        'write_timeout' => 30,
         'dateFormat' => [
             'date'     => 'Y-m-d',
             'datetime' => 'Y-m-d H:i:s',
             'time'     => 'H:i:s',
         ],
     ];
+    
 
 
     //    /**
