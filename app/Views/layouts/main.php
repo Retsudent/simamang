@@ -32,119 +32,6 @@
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
-        /* Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 1;
-            visibility: visible;
-            transition: all 0.5s ease;
-        }
-
-        .loading-overlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loading-container {
-            text-align: center;
-            animation: fadeInUp 0.6s ease;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--border-light);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1.5rem;
-            position: relative;
-        }
-
-        .loading-spinner::after {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: -4px;
-            right: -4px;
-            bottom: -4px;
-            border: 2px solid transparent;
-            border-top: 2px solid var(--primary-light);
-            border-radius: 50%;
-            animation: spin 1.5s linear infinite reverse;
-        }
-
-        .loading-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .loading-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 400;
-        }
-
-        .loading-logo {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-            animation: bounce 2s ease-in-out infinite;
-        }
-
-        /* Loading Animations */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-
-        /* Page Transition */
-        .page-content {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-
-        .page-content.loaded {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--background-light);
@@ -902,18 +789,6 @@
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-container">
-            <div class="loading-logo">
-                <i class="bi bi-building-check"></i>
-            </div>
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Memuat SIMAMANG</div>
-            <div class="loading-subtitle">Sistem Monitoring Aktivitas Magang</div>
-        </div>
-    </div>
-
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobileOverlay"></div>
 
@@ -998,9 +873,8 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="page-content" id="pageContent">
-            <!-- Top Navigation -->
-            <div class="top-nav">
+        <!-- Top Navigation -->
+        <div class="top-nav">
             <div class="top-nav-left">
                 <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
                     <i class="bi bi-list"></i>
@@ -1059,32 +933,13 @@
             <!-- Main Content -->
             <?= $this->renderSection('content') ?>
         </div>
-        </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Loading and Sidebar Script -->
+    <!-- Sidebar Toggle Script -->
     <script>
-        // Loading Animation
-        document.addEventListener('DOMContentLoaded', function() {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const pageContent = document.getElementById('pageContent');
-            
-            // Hide loading overlay and show page content
-            setTimeout(function() {
-                loadingOverlay.classList.add('hidden');
-                pageContent.classList.add('loaded');
-                
-                // Remove loading overlay from DOM after animation
-                setTimeout(function() {
-                    loadingOverlay.style.display = 'none';
-                }, 500);
-            }, 1500); // Show loading for 1.5 seconds
-        });
-
-        // Sidebar Toggle Script
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
@@ -1207,56 +1062,6 @@
             
             // Initialize mobile state
             handleMobileSidebar();
-        });
-
-        // Page Navigation Loading
-        document.addEventListener('DOMContentLoaded', function() {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const pageContent = document.getElementById('pageContent');
-            
-            // Show loading on page navigation
-            function showLoading() {
-                loadingOverlay.style.display = 'flex';
-                loadingOverlay.classList.remove('hidden');
-                pageContent.classList.remove('loaded');
-            }
-            
-            // Hide loading after page load
-            function hideLoading() {
-                setTimeout(function() {
-                    loadingOverlay.classList.add('hidden');
-                    pageContent.classList.add('loaded');
-                    
-                    setTimeout(function() {
-                        loadingOverlay.style.display = 'none';
-                    }, 500);
-                }, 800);
-            }
-            
-            // Intercept all navigation links
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a');
-                if (link && link.href && !link.href.includes('#') && !link.href.includes('javascript:') && !link.target) {
-                    // Don't show loading for dropdown toggles, sidebar toggles, etc.
-                    if (!link.classList.contains('dropdown-toggle') && 
-                        !link.classList.contains('sidebar-toggle') &&
-                        !link.classList.contains('btn-close')) {
-                        showLoading();
-                    }
-                }
-            });
-            
-            // Show loading on form submission
-            document.addEventListener('submit', function(e) {
-                if (e.target.tagName === 'FORM') {
-                    showLoading();
-                }
-            });
-            
-            // Hide loading when page is fully loaded
-            window.addEventListener('load', function() {
-                hideLoading();
-            });
         });
     </script>
 </body>
