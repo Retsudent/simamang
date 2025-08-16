@@ -101,7 +101,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <form method="post" action="<?= base_url('admin/generate-laporan-admin') ?>">
+            <form method="post" action="<?= base_url('admin/generate-laporan-admin') ?>" id="reportForm">
                 <?= csrf_field() ?>
                 <div class="row g-3 align-items-end">
                     <div class="col-md-4">
@@ -211,12 +211,12 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="<?= base_url('admin/generate-laporan-admin') ?>" 
-                                           class="btn btn-sm btn-outline-primary"
-                                           onclick="setSiswaForReport(<?= $s['id'] ?>, '<?= esc($s['nama']) ?>')">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                onclick="setSiswaForReport(<?= $s['id'] ?>)">
                                             <i class="bi bi-file-earmark-text me-1"></i>
                                             Lihat Laporan
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -239,20 +239,24 @@
 </style>
 
 <script>
-function setSiswaForReport(siswaId, siswaNama) {
+function setSiswaForReport(siswaId) {
     // Set nilai siswa di form
-    document.querySelector('select[name="siswa_id"]').value = siswaId;
+    const form = document.getElementById('reportForm');
+    form.querySelector('select[name="siswa_id"]').value = siswaId;
     
     // Set tanggal default (bulan ini)
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     
-    document.querySelector('input[name="start_date"]').value = firstDay.toISOString().split('T')[0];
-    document.querySelector('input[name="end_date"]').value = lastDay.toISOString().split('T')[0];
+    form.querySelector('input[name="start_date"]').value = firstDay.toISOString().split('T')[0];
+    form.querySelector('input[name="end_date"]').value = lastDay.toISOString().split('T')[0];
     
     // Scroll ke form
-    document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+    form.closest('.card').scrollIntoView({ behavior: 'smooth' });
+    
+    // Submit form otomatis untuk menampilkan laporan
+    form.submit();
 }
 </script>
 

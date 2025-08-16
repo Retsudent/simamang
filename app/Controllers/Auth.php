@@ -55,7 +55,8 @@ class Auth extends Controller
                 'username'   => $user['username'],
                 'nama'       => $user['nama'],
                 'role'       => $user['role'],
-                'table'      => $user['table'] // tambahkan info tabel asal
+                'table'      => $user['table'], // tambahkan info tabel asal
+                'foto_profil' => $user['foto_profil'] ?? null // tambahkan foto profil
             ]);
 
             return redirect()->to($this->roleRedirect($user['role']));
@@ -68,7 +69,19 @@ class Auth extends Controller
     private function findUserInAllTables($username)
     {
         try {
-            // Cek di tabel admin
+            // Cek di tabel users (unified system) - PRIORITAS UTAMA
+            $user = $this->db->table('users')
+                             ->where('username', $username)
+                             ->where('status', 'aktif')
+                             ->get()
+                             ->getRowArray();
+            
+            if ($user) {
+                $user['table'] = 'users';
+                return $user;
+            }
+
+            // Fallback: Cek di tabel role-specific (untuk backward compatibility)
             $admin = $this->db->table('admin')
                               ->where('username', $username)
                               ->where('status', 'aktif')
@@ -81,7 +94,6 @@ class Auth extends Controller
                 return $admin;
             }
 
-            // Cek di tabel pembimbing
             $pembimbing = $this->db->table('pembimbing')
                                    ->where('username', $username)
                                    ->where('status', 'aktif')
@@ -94,7 +106,6 @@ class Auth extends Controller
                 return $pembimbing;
             }
 
-            // Cek di tabel siswa
             $siswa = $this->db->table('siswa')
                               ->where('username', $username)
                               ->where('status', 'aktif')
@@ -170,7 +181,22 @@ class Auth extends Controller
         ];
 
         try {
+            // Insert ke tabel users (unified)
+            $userData = [
+                'nama' => $request->getPost('nama'),
+                'username' => $request->getPost('username'),
+                'password' => $passwordHash,
+                'role' => 'siswa',
+                'status' => 'aktif'
+            ];
+            
+            $this->db->table('users')->insert($userData);
+            $userId = $this->db->insertID();
+            
+            // Insert ke tabel siswa dengan foreign key
+            $data['user_id'] = $userId;
             $this->db->table('siswa')->insert($data);
+            
         } catch (\Throwable $e) {
             return redirect()->back()->withInput()->with('error', 'Gagal mendaftar: ' . $e->getMessage());
         }
@@ -180,7 +206,14 @@ class Auth extends Controller
 
     private function isUsernameExists($username)
     {
-        // Cek di semua tabel
+        // Cek di tabel users (unified) - PRIORITAS UTAMA
+        $users = $this->db->table('users')->where('username', $username)->countAllResults();
+        
+        if ($users > 0) {
+            return true;
+        }
+        
+        // Fallback: Cek di tabel role-specific (untuk backward compatibility)
         $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
         $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
         $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();

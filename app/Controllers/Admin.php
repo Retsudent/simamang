@@ -16,24 +16,38 @@ class Admin extends BaseController
         
         // Cek apakah user sudah login dan role-nya admin
         if (!$this->session->get('isLoggedIn') || $this->session->get('role') !== 'admin') {
-            return redirect()->to('/login');
+            redirect()->to('/login')->send();
+            exit;
         }
     }
 
     public function dashboard()
     {
+        // Load TimeHelper manually
+        helper('TimeHelper');
+        
         // Hitung statistik dari tabel terpisah
         $totalSiswa = $this->db->table('siswa')->where('status', 'aktif')->countAllResults();
         $totalPembimbing = $this->db->table('pembimbing')->where('status', 'aktif')->countAllResults();
         $totalLog = $this->db->table('log_aktivitas')->countAllResults();
         $logPending = $this->db->table('log_aktivitas')->where('status', 'menunggu')->countAllResults();
         
+        // Ambil 5 aktivitas terbaru untuk ringkasan dashboard
+        $recentActivities = $this->db->table('log_aktivitas')
+                                   ->select('log_aktivitas.*, siswa.nama as siswa_nama, siswa.nis')
+                                   ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
+                                   ->orderBy('log_aktivitas.created_at', 'DESC')
+                                   ->limit(5)
+                                   ->get()
+                                   ->getResultArray();
+        
         $data = [
             'title' => 'Dashboard Admin - SIMAMANG',
             'totalSiswa' => $totalSiswa,
             'totalPembimbing' => $totalPembimbing,
             'totalLog' => $totalLog,
-            'logPending' => $logPending
+            'logPending' => $logPending,
+            'recentActivities' => $recentActivities
         ];
         
         return view('admin/dashboard', $data);
@@ -62,48 +76,59 @@ class Admin extends BaseController
 
     public function simpanSiswa()
     {
-        $request = service('request');
-        
-        // Validasi input
-        $rules = [
-            'nama' => 'required|min_length[3]',
-            'username' => 'required|min_length[3]',
-            'password' => 'required|min_length[6]',
-            'nis' => 'required|min_length[5]',
-            'tempat_magang' => 'required|min_length[5]'
-        ];
-        
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-        
-        // Cek apakah username sudah ada di semua tabel
-        if ($this->isUsernameExists($request->getPost('username'))) {
-            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
-        }
-        
-        // Cek apakah NIS sudah ada
-        if ($this->isNISExists($request->getPost('nis'))) {
-            return redirect()->back()->withInput()->with('error', 'NIS sudah terdaftar');
-        }
-        
-        // Hash password
-        $password = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
-        
-        $siswaData = [
-            'nama' => $request->getPost('nama'),
-            'username' => $request->getPost('username'),
-            'password' => $password,
-            'nis' => $request->getPost('nis'),
-            'tempat_magang' => $request->getPost('tempat_magang'),
-            'alamat_magang' => $request->getPost('tempat_magang'),
-            'status' => 'aktif'
-        ];
-        
-        if ($this->db->table('siswa')->insert($siswaData)) {
-            return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil ditambahkan');
-        } else {
-            return redirect()->back()->withInput()->with('error', 'Gagal menambahkan siswa');
+        try {
+            $request = service('request');
+            
+            // Validasi input
+            $rules = [
+                'nama' => 'required|min_length[3]',
+                'username' => 'required|min_length[3]',
+                'password' => 'required|min_length[6]',
+                'nis' => 'required|min_length[5]',
+                'tempat_magang' => 'required|min_length[5]',
+                'tanggal_mulai_magang' => 'required|valid_date',
+                'tanggal_selesai_magang' => 'required|valid_date'
+            ];
+            
+            if (!$this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+            
+            // Cek apakah username sudah ada di semua tabel
+            if ($this->isUsernameExists($request->getPost('username'))) {
+                return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
+            }
+            
+            // Cek apakah NIS sudah ada
+            if ($this->isNISExists($request->getPost('nis'))) {
+                return redirect()->back()->withInput()->with('error', 'NIS sudah terdaftar');
+            }
+            
+            // Hash password
+            $password = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
+            
+            $siswaData = [
+                'nama' => $request->getPost('nama'),
+                'username' => $request->getPost('username'),
+                'password' => $password,
+                'nis' => $request->getPost('nis'),
+                'tempat_magang' => $request->getPost('tempat_magang'),
+                'alamat_magang' => $request->getPost('tempat_magang'),
+                'tanggal_mulai_magang' => $request->getPost('tanggal_mulai_magang'),
+                'tanggal_selesai_magang' => $request->getPost('tanggal_selesai_magang'),
+                'status' => 'aktif'
+            ];
+            
+            if ($this->db->table('siswa')->insert($siswaData)) {
+                return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil ditambahkan');
+            } else {
+                return redirect()->back()->withInput()->with('error', 'Gagal menambahkan siswa');
+            }
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Exception in simpanSiswa: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 
@@ -162,7 +187,9 @@ class Admin extends BaseController
             'username' => $request->getPost('username'),
             'nis' => $request->getPost('nis'),
             'tempat_magang' => $request->getPost('tempat_magang'),
-            'alamat_magang' => $request->getPost('tempat_magang')
+            'alamat_magang' => $request->getPost('tempat_magang'),
+            'tanggal_mulai_magang' => $request->getPost('tanggal_mulai_magang'),
+            'tanggal_selesai_magang' => $request->getPost('tanggal_selesai_magang')
         ];
         
         // Update password jika diisi
@@ -216,13 +243,11 @@ class Admin extends BaseController
     {
         $request = service('request');
         
-        // Validasi input
+        // Validasi input (hanya kolom yang ada di tabel)
         $rules = [
             'nama' => 'required|min_length[3]',
             'username' => 'required|min_length[3]',
-            'password' => 'required|min_length[6]',
-            'instansi' => 'required|min_length[3]',
-            'jabatan' => 'required|min_length[3]'
+            'password' => 'required|min_length[6]'
         ];
         
         if (!$this->validate($rules)) {
@@ -243,10 +268,6 @@ class Admin extends BaseController
             'password' => $password,
             'email' => $request->getPost('email'),
             'no_hp' => $request->getPost('no_hp'),
-            'alamat' => $request->getPost('alamat'),
-            'instansi' => $request->getPost('instansi'),
-            'jabatan' => $request->getPost('jabatan'),
-            'bidang_keahlian' => $request->getPost('bidang_keahlian'),
             'status' => 'aktif'
         ];
         
@@ -384,28 +405,23 @@ class Admin extends BaseController
             return redirect()->back()->with('error', 'Siswa tidak ditemukan');
         }
         
-        // Ambil log aktivitas dalam rentang tanggal
+        // Ambil log aktivitas dalam rentang tanggal + komentar pembimbing (left join)
         $logAktivitas = $this->db->table('log_aktivitas')
-                                 ->where('siswa_id', $siswaId)
-                                 ->where('tanggal >=', $startDate)
-                                 ->where('tanggal <=', $endDate)
-                                 ->orderBy('tanggal', 'ASC')
+                                 ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
+                                 ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
+                                 ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
+                                 ->where('log_aktivitas.siswa_id', $siswaId)
+                                 ->where('log_aktivitas.tanggal >=', $startDate)
+                                 ->where('log_aktivitas.tanggal <=', $endDate)
+                                 ->orderBy('log_aktivitas.tanggal', 'ASC')
                                  ->get()
                                  ->getResultArray();
-        
-        // Ambil komentar pembimbing
-        $komentarPembimbing = $this->db->table('komentar_pembimbing')
-                                       ->select('komentar_pembimbing.*, pembimbing.nama as nama_pembimbing')
-                                       ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id')
-                                       ->whereIn('log_id', array_column($logAktivitas, 'id'))
-                                       ->get()
-                                       ->getResultArray();
         
         $data = [
             'title' => 'Laporan Magang - ' . $siswa['nama'],
             'siswa' => $siswa,
-            'logAktivitas' => $logAktivitas,
-            'komentarPembimbing' => $komentarPembimbing,
+            // View mengharapkan variabel 'logs'
+            'logs' => $logAktivitas,
             'startDate' => $startDate,
             'endDate' => $endDate
         ];
@@ -507,35 +523,47 @@ class Admin extends BaseController
         }
     }
 
+
+
     private function isUsernameExists($username, $excludeId = null)
     {
-        // Cek di semua tabel
-        $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
-        $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
-        $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();
-        
-        // Jika ada excludeId, kurangi 1 dari count yang sesuai
-        if ($excludeId) {
-            // Cek di tabel mana excludeId berada
-            $adminCheck = $this->db->table('admin')->where('id', $excludeId)->countAllResults();
-            $pembimbingCheck = $this->db->table('pembimbing')->where('id', $excludeId)->countAllResults();
-            $siswaCheck = $this->db->table('siswa')->where('id', $excludeId)->countAllResults();
+        try {
+            // Cek di semua tabel
+            $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
+            $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
+            $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();
             
-            if ($adminCheck > 0) $admin--;
-            elseif ($pembimbingCheck > 0) $pembimbing--;
-            elseif ($siswaCheck > 0) $siswa--;
+            // Jika ada excludeId, kurangi 1 dari count yang sesuai
+            if ($excludeId) {
+                // Cek di tabel mana excludeId berada
+                $adminCheck = $this->db->table('admin')->where('id', $excludeId)->countAllResults();
+                $pembimbingCheck = $this->db->table('pembimbing')->where('id', $excludeId)->countAllResults();
+                $siswaCheck = $this->db->table('siswa')->where('id', $excludeId)->countAllResults();
+                
+                if ($adminCheck > 0) $admin--;
+                elseif ($pembimbingCheck > 0) $pembimbing--;
+                elseif ($siswaCheck > 0) $siswa--;
+            }
+            
+            return ($admin > 0 || $pembimbing > 0 || $siswa > 0);
+        } catch (\Exception $e) {
+            log_message('error', 'Error in isUsernameExists: ' . $e->getMessage());
+            return false; // Return false jika ada error, biarkan proses lanjut
         }
-        
-        return ($admin > 0 || $pembimbing > 0 || $siswa > 0);
     }
 
     private function isNISExists($nis, $excludeId = null)
     {
-        $query = $this->db->table('siswa')->where('nis', $nis);
-        if ($excludeId) {
-            $query->where('id !=', $excludeId);
+        try {
+            $query = $this->db->table('siswa')->where('nis', $nis);
+            if ($excludeId) {
+                $query->where('id !=', $excludeId);
+            }
+            return $query->countAllResults() > 0;
+        } catch (\Exception $e) {
+            log_message('error', 'Error in isNISExists: ' . $e->getMessage());
+            return false; // Return false jika ada error, biarkan proses lanjut
         }
-        return $query->countAllResults() > 0;
     }
 }
 

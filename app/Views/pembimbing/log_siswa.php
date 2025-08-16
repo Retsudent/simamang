@@ -187,30 +187,36 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <?php if ($log['bukti']): ?>
-                                                    <span class="badge badge-info">
-                                                        <i class="fas fa-paperclip mr-1"></i>Ada bukti
-                                                    </span>
+                                                <?php if (!empty($log['bukti'])): ?>
+                                                    <a href="<?= base_url('uploads/bukti/' . $log['bukti']) ?>" target="_blank" class="badge bg-info text-decoration-none">
+                                                        <i class="bi bi-paperclip me-1"></i> Lihat Bukti
+                                                    </a>
                                                 <?php else: ?>
                                                     <span class="text-muted">-</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
                                                 <?php
-                                                $statusClass = match($log['status']) {
-                                                    'disetujui' => 'badge-success',
-                                                    'revisi' => 'badge-warning',
-                                                    default => 'badge-secondary'
+                                                $effectiveStatus = $log['status'] ?? '';
+                                                if (empty($effectiveStatus) && !empty($log['status_validasi'])) {
+                                                    $effectiveStatus = $log['status_validasi'];
+                                                }
+                                                $effectiveStatus = $effectiveStatus ?: 'menunggu';
+
+                                                $badgeClass = match($effectiveStatus) {
+                                                    'disetujui' => 'bg-success',
+                                                    'revisi' => 'bg-warning',
+                                                    'menunggu' => 'bg-secondary',
+                                                    default => 'bg-secondary'
                                                 };
-                                                $statusText = ucfirst($log['status']);
                                                 ?>
-                                                <span class="badge <?= $statusClass ?> badge-pill"><?= $statusText ?></span>
+                                                <span class="badge <?= $badgeClass ?>"><?= ucfirst($effectiveStatus) ?></span>
                                             </td>
                                             <td>
-                                                <?php if (isset($log['komentar']) && $log['komentar']): ?>
-                                                    <div class="text-truncate" style="max-width: 200px;" title="<?= $log['komentar'] ?>">
-                                                        <i class="fas fa-comment text-info mr-1"></i>
-                                                        <?= $log['komentar'] ?>
+                                                <?php if (!empty($log['komentar'])): ?>
+                                                    <div class="text-truncate" style="max-width: 220px;" title="<?= esc($log['komentar']) ?>">
+                                                        <i class="bi bi-chat-dots text-info me-1"></i>
+                                                        <?= esc($log['komentar']) ?>
                                                     </div>
                                                 <?php else: ?>
                                                     <span class="text-muted">-</span>
@@ -220,12 +226,12 @@
                                                 <div class="btn-group" role="group">
                                                     <a href="<?= base_url('pembimbing/detail-log/' . $log['id']) ?>" 
                                                        class="btn btn-sm btn-info" title="Lihat Detail">
-                                                        <i class="fas fa-eye"></i>
+                                                        <i class="bi bi-eye"></i>
                                                     </a>
                                                     <?php if ($log['status'] == 'menunggu'): ?>
                                                         <a href="<?= base_url('pembimbing/detail-log/' . $log['id']) ?>" 
                                                            class="btn btn-sm btn-success" title="Review & Komentar">
-                                                            <i class="fas fa-comment"></i>
+                                                            <i class="bi bi-chat-left-text"></i>
                                                         </a>
                                                     <?php endif; ?>
                                                 </div>

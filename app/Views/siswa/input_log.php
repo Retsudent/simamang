@@ -71,7 +71,7 @@
                         <!-- Activity Description -->
                         <div class="mb-4">
                             <div class="form-floating">
-                                <textarea class="form-control" id="uraian" name="uraian" rows="6" 
+                            <textarea class="form-control" id="uraian" name="uraian" rows="6" 
                                           placeholder="Jelaskan detail aktivitas yang Anda lakukan hari ini..." required></textarea>
                                 <label for="uraian">
                                     <i class="bi bi-text-paragraph me-2"></i>Uraian Aktivitas
@@ -135,7 +135,7 @@
                             <button type="reset" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-clockwise me-2"></i>
                                 Reset Form
-                            </button>
+                                </button>
                         </div>
                     </form>
                 </div>
@@ -344,9 +344,9 @@ document.getElementById('logForm').addEventListener('submit', function(e) {
     const uraian = document.getElementById('uraian').value.trim();
     const konfirmasi = document.getElementById('konfirmasi').checked;
     
-    if (uraian.length < 50) {
+    if (uraian.length < 15) {
         e.preventDefault();
-        alert('Uraian aktivitas minimal 50 karakter. Silakan jelaskan aktivitas Anda dengan lebih detail.');
+        alert('Uraian aktivitas minimal 15 karakter. Silakan jelaskan aktivitas Anda dengan lebih detail.');
         return;
     }
     

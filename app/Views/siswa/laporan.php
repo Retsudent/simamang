@@ -83,30 +83,44 @@
                 </div>
             </div>
 
-            <!-- Quick Report Templates -->
+            <!-- Quick Report Buttons -->
             <div class="card border-0 shadow mt-4">
-                <div class="card-header">
+                <div class="card-header bg-gradient-primary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-lightning"></i> Laporan Cepat
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <a href="<?= base_url('siswa/generate-laporan-rapid?period=week') ?>" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-calendar-week"></i> Minggu Ini
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <a href="<?= base_url('siswa/generate-laporan-rapid?period=month') ?>" class="btn btn-outline-success w-100">
-                                <i class="bi bi-calendar-month"></i> Bulan Ini
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <a href="<?= base_url('siswa/generate-laporan-rapid?period=all') ?>" class="btn btn-outline-info w-100">
-                                <i class="bi bi-calendar-all"></i> Semua Aktivitas
-                            </a>
-                        </div>
+                    <div class="report-buttons-container">
+                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=week') ?>" class="report-button week-btn">
+                            <div class="button-icon">
+                                <i class="bi bi-calendar-week"></i>
+                            </div>
+                            <div class="button-content">
+                                <div class="button-title">Minggu Ini</div>
+                                <div class="button-subtitle">Senin - Minggu</div>
+                            </div>
+                        </a>
+                        
+                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=month') ?>" class="report-button month-btn">
+                            <div class="button-icon">
+                                <i class="bi bi-calendar-month"></i>
+                            </div>
+                            <div class="button-content">
+                                <div class="button-title">Bulan Ini</div>
+                                <div class="button-subtitle">1 - Akhir Bulan</div>
+                            </div>
+                        </a>
+                        
+                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=all') ?>" class="report-button all-btn">
+                            <div class="button-icon">
+                                <i class="bi bi-list-ul"></i>
+                            </div>
+                            <div class="button-content">
+                                <div class="button-title">Semua Aktivitas</div>
+                                <div class="button-subtitle">Dari Awal Magang</div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -172,4 +186,254 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+/* Quick Report Styling - Section Laporan Cepat */
+.report-buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.report-button {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px;
+    background: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #2c3e50;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.report-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    transition: left 0.6s ease;
+}
+
+.report-button:hover::before {
+    left: 100%;
+}
+
+.report-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    text-decoration: none;
+}
+
+/* Button Variants */
+.week-btn {
+    border-left: 4px solid #3498db;
+}
+
+.week-btn:hover {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-color: #3498db;
+    color: #1976d2;
+}
+
+.month-btn {
+    border-left: 4px solid #27ae60;
+}
+
+.month-btn:hover {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    border-color: #27ae60;
+    color: #2e7d32;
+}
+
+.all-btn {
+    border-left: 4px solid #9b59b6;
+}
+
+.all-btn:hover {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    border-color: #9b59b6;
+    color: #7b1fa2;
+}
+
+.button-icon {
+    font-size: 2.5rem;
+    margin-right: 20px;
+    transition: all 0.3s ease;
+    min-width: 50px;
+    text-align: center;
+}
+
+.week-btn .button-icon {
+    color: #3498db;
+}
+
+.month-btn .button-icon {
+    color: #27ae60;
+}
+
+.all-btn .button-icon {
+    color: #9b59b6;
+}
+
+.report-button:hover .button-icon {
+    transform: scale(1.1);
+}
+
+.button-content {
+    flex: 1;
+}
+
+.button-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.button-subtitle {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.report-button:hover .button-subtitle {
+    color: inherit;
+}
+
+/* Card Header Styling */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+/* Enhanced Card Styling */
+.card {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-header h5 {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.card-header i {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .report-buttons-container {
+        gap: 12px;
+    }
+    
+    .report-button {
+        padding: 18px 20px;
+    }
+    
+    .button-icon {
+        font-size: 2.2rem;
+        margin-right: 15px;
+    }
+    
+    .button-title {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .report-button {
+        padding: 15px 18px;
+    }
+    
+    .button-icon {
+        font-size: 2rem;
+        margin-right: 12px;
+    }
+    
+    .button-title {
+        font-size: 1.1rem;
+    }
+    
+    .button-subtitle {
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation for page load */
+.report-buttons-container {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for button items */
+.report-button:nth-child(1) { animation-delay: 0.1s; }
+.report-button:nth-child(2) { animation-delay: 0.2s; }
+.report-button:nth-child(3) { animation-delay: 0.3s; }
+
+/* Enhanced Button Styling */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Form Styling */
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-label i {
+    margin-right: 8px;
+    color: #007bff;
+}
+</style>
+
 <?= $this->endSection() ?>

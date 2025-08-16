@@ -1,289 +1,240 @@
 <?= $this->extend('layouts/main') ?>
 
+<?php helper('TimeHelper'); ?>
+
 <?= $this->section('content') ?>
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0 text-gray-800">Dashboard Admin</h1>
-                <div class="text-right">
-                    <p class="mb-0 text-muted">Selamat datang,</p>
-                    <h5 class="mb-0"><?= session()->get('nama') ?></h5>
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <div class="welcome-greeting" id="greeting"><?= get_greeting(session()->get('nama')) ?></div>
+            <div class="welcome-subtitle">Selamat datang kembali di SIMAMANG</div>
+            <div class="welcome-info">
+                <div class="welcome-item">
+                    <i class="bi bi-calendar3"></i>
+                    <span id="current-date"><?= get_current_date() ?></span>
+                </div>
+                <div class="welcome-item">
+                    <i class="bi bi-clock"></i>
+                    <span id="current-time"><?= date('H:i') ?> WIB</span>
+                </div>
+                <div class="welcome-item">
+                    <i class="bi bi-person-circle"></i>
+                    <span><?= ucfirst(session()->get('role')) ?></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Info Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Siswa</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $totalSiswa ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number"><?= $totalSiswa ?></div>
+                    <div class="stat-label">Total Siswa</div>
+                    <div class="stat-change">+<?= $logPending ?> menunggu review</div>
+                </div>
+                <div class="stat-icon primary">
+                    <i class="bi bi-people"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Total Pembimbing</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $totalPembimbing ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number"><?= $totalPembimbing ?></div>
+                    <div class="stat-label">Total Pembimbing</div>
+                    <div class="stat-change">Siap membimbing</div>
+                </div>
+                <div class="stat-icon success">
+                    <i class="bi bi-person-workspace"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Total Log Aktivitas</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $totalLog ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number"><?= $totalLog ?></div>
+                    <div class="stat-label">Total Log Aktivitas</div>
+                    <div class="stat-change">Terus bertambah</div>
+                </div>
+                <div class="stat-icon info">
+                    <i class="bi bi-clipboard-data"></i>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Log Menunggu</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $logPending ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-number"><?= $logPending ?></div>
+                    <div class="stat-label">Log Menunggu</div>
+                    <div class="stat-change">Perlu review</div>
+                </div>
+                <div class="stat-icon warning">
+                    <i class="bi bi-clock-history"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Aksi Cepat</h6>
+    <div class="quick-actions">
+        <h3><i class="bi bi-lightning"></i> Akses Cepat</h3>
+        <div class="actions-grid">
+            <a href="<?= base_url('admin/kelola-siswa') ?>" class="action-item">
+                <div class="action-icon">
+                    <i class="bi bi-person-plus"></i>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="<?= base_url('admin/kelola-siswa') ?>" class="btn btn-primary btn-block">
-                                <i class="fas fa-user-graduate mr-2"></i>Kelola Siswa
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="<?= base_url('admin/kelola-pembimbing') ?>" class="btn btn-success btn-block">
-                                <i class="fas fa-user-tie mr-2"></i>Kelola Pembimbing
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="<?= base_url('admin/laporan-magang') ?>" class="btn btn-info btn-block">
-                                <i class="fas fa-file-pdf mr-2"></i>Laporan Magang
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="<?= base_url('logout') ?>" class="btn btn-danger btn-block">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                            </a>
-                        </div>
-                    </div>
+                <div class="action-text">Kelola Siswa</div>
+            </a>
+            <a href="<?= base_url('admin/kelola-pembimbing') ?>" class="action-item">
+                <div class="action-icon">
+                    <i class="bi bi-person-workspace"></i>
                 </div>
-            </div>
+                <div class="action-text">Kelola Pembimbing</div>
+            </a>
+            <a href="<?= base_url('admin/atur-bimbingan') ?>" class="action-item">
+                <div class="action-icon">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <div class="action-text">Atur Bimbingan</div>
+            </a>
+            <a href="<?= base_url('admin/laporan-magang') ?>" class="action-item">
+                <div class="action-icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="action-text">Laporan Magang</div>
+            </a>
+            <a href="<?= base_url('profile') ?>" class="action-item">
+                <div class="action-icon">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="action-text">Profil Saya</div>
+            </a>
         </div>
     </div>
 
-    <!-- System Status -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-chart-pie mr-2"></i>Statistik Sistem
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="h4 mb-0 font-weight-bold text-primary"><?= $totalSiswa ?></div>
-                            <small class="text-muted">Siswa</small>
-                        </div>
-                        <div class="col-4">
-                            <div class="h4 mb-0 font-weight-bold text-success"><?= $totalPembimbing ?></div>
-                            <small class="text-muted">Pembimbing</small>
-                        </div>
-                        <div class="col-4">
-                            <div class="h4 mb-0 font-weight-bold text-info"><?= $totalLog ?></div>
-                            <small class="text-muted">Log</small>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="h5 mb-0 font-weight-bold text-success"><?= $totalLog > 0 ? round((($totalLog - $logPending) / $totalLog) * 100, 1) : 0 ?>%</div>
-                            <small class="text-muted">Progress</small>
-                        </div>
-                        <div class="col-6">
-                            <div class="h5 mb-0 font-weight-bold text-warning"><?= $logPending ?></div>
-                            <small class="text-muted">Pending</small>
-                        </div>
-                    </div>
-                </div>
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <h3><i class="bi bi-activity"></i> Aktivitas Terbaru</h3>
+        <?php if (empty($recentActivities)): ?>
+            <div class="text-center py-4">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-muted);"></i>
+                <p class="text-muted mt-2">Belum ada aktivitas terbaru</p>
             </div>
-        </div>
-        
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-tasks mr-2"></i>Prioritas Hari Ini
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <?php if ($logPending > 0): ?>
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            <strong>Perhatian:</strong> Ada <?= $logPending ?> log aktivitas yang menunggu review dari pembimbing.
+        <?php else: ?>
+            <?php foreach (array_slice($recentActivities, 0, 5) as $activity): ?>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">
+                            <strong><?= $activity['siswa_nama'] ?></strong> - <?= substr($activity['uraian'], 0, 50) ?>...
                         </div>
-                        <ul class="list-unstyled mb-0">
-                            <li class="mb-2">
-                                <i class="fas fa-circle text-warning mr-2" style="font-size: 8px;"></i>
-                                Review log aktivitas siswa
-                            </li>
-                            <li class="mb-2">
-                                <i class="fas fa-circle text-warning mr-2" style="font-size: 8px;"></i>
-                                Pastikan pembimbing aktif
-                            </li>
-                            <li class="mb-2">
-                                <i class="fas fa-circle text-warning mr-2" style="font-size: 8px;"></i>
-                                Monitor progress magang
-                            </li>
-                        </ul>
-                    <?php else: ?>
-                        <div class="text-center py-3">
-                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                            <p class="text-success mb-0">Semua sistem berjalan dengan baik!</p>
+                        <div class="activity-time">
+                            <?= date('d/m/Y H:i', strtotime($activity['tanggal'] . ' ' . $activity['jam_mulai'])) ?>
+                            <span class="badge bg-<?= ($activity['status'] ?? 'menunggu') === 'disetujui' ? 'success' : (($activity['status'] ?? 'menunggu') === 'revisi' ? 'warning' : 'secondary') ?> ms-2">
+                                <?= ucfirst($activity['status'] ?? 'menunggu') ?>
+                            </span>
                         </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activities -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-history mr-2"></i>Aktivitas Terbaru
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center py-4">
-                        <i class="fas fa-chart-line fa-3x text-gray-300 mb-3"></i>
-                        <h6 class="text-gray-500">Fitur Aktivitas Terbaru</h6>
-                        <p class="text-muted">Akan menampilkan aktivitas terbaru dari sistem</p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Reports -->
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card border-left-primary shadow h-100">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Laporan Harian</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">Generate laporan harian siswa</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <a href="<?= base_url('admin/laporan-magang') ?>" class="btn btn-primary btn-sm">
-                            <i class="fas fa-file-pdf mr-1"></i>Buat Laporan
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-left-success shadow h-100">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Kelola User</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">Tambah/edit siswa & pembimbing</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users-cog fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <a href="<?= base_url('admin/kelola-siswa') ?>" class="btn btn-success btn-sm">
-                            <i class="fas fa-user-plus mr-1"></i>Kelola User
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-left-info shadow h-100">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Monitoring</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">Monitor progress magang siswa</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-eye fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <a href="<?= base_url('admin/laporan-magang') ?>" class="btn btn-info btn-sm">
-                            <i class="fas fa-chart-bar mr-1"></i>Lihat Progress
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </div>
+
+<script>
+// Real-time clock and greeting update
+document.addEventListener('DOMContentLoaded', function() {
+    const greetingElement = document.getElementById('greeting');
+    const timeElement = document.getElementById('current-time');
+    const dateElement = document.getElementById('current-date');
+    const userName = '<?= session()->get('nama') ?>';
+    
+    // Function to get greeting based on hour
+    function getGreeting(hour) {
+        if (hour >= 5 && hour < 12) {
+            return 'Selamat Pagi';
+        } else if (hour >= 12 && hour < 15) {
+            return 'Selamat Siang';
+        } else if (hour >= 15 && hour < 18) {
+            return 'Selamat Sore';
+        } else {
+            return 'Selamat Malam';
+        }
+    }
+    
+    // Function to update time and greeting
+    function updateTime() {
+        const now = new Date();
+        
+        // Use local time directly (no manual timezone adjustment needed)
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const day = now.getDay();
+        const date = now.getDate();
+        const month = now.getMonth();
+        const year = now.getFullYear();
+        
+        // Update time with local timezone
+        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        timeElement.textContent = timeString;
+        
+        // Update greeting if hour changed
+        const currentGreeting = getGreeting(hours);
+        const fullGreeting = `${currentGreeting}${userName ? ', ' + userName : ''}`;
+        if (greetingElement.textContent !== fullGreeting) {
+            greetingElement.textContent = fullGreeting;
+        }
+        
+        // Update date (only once per day)
+        const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        
+        const dateString = `${dayNames[day]}, ${date} ${monthNames[month]} ${year}`;
+        if (dateElement.textContent !== dateString) {
+            dateElement.textContent = dateString;
+        }
+    }
+    
+    // Update time every second
+    updateTime();
+    setInterval(updateTime, 1000);
+    
+    // Animate stats on load
+    const statNumbers = document.querySelectorAll('.stat-number');
+    statNumbers.forEach(stat => {
+        const finalValue = parseInt(stat.textContent);
+        let currentValue = 0;
+        const increment = finalValue / 50;
+        
+        const timer = setInterval(() => {
+            currentValue += increment;
+            if (currentValue >= finalValue) {
+                currentValue = finalValue;
+                clearInterval(timer);
+            }
+            stat.textContent = Math.floor(currentValue);
+        }, 30);
+    });
+
+    // Add hover effects to action items
+    const actionItems = document.querySelectorAll('.action-item');
+    actionItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(8px) scale(1.02)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0) scale(1)';
+        });
+    });
+});
+</script>
 <?= $this->endSection() ?>

@@ -16,16 +16,20 @@ class Siswa extends BaseController
         
         // Cek apakah user sudah login dan role-nya siswa
         if (!$this->session->get('isLoggedIn') || $this->session->get('role') !== 'siswa') {
-            return redirect()->to('/login');
+            redirect()->to('/login')->send();
+            exit;
         }
     }
 
     public function dashboard()
     {
+        // Load TimeHelper manually
+        helper('TimeHelper');
+        
         $userId = $this->session->get('user_id');
         
-        // Ambil data siswa
-        $siswa_info = $this->db->table('siswa')->where('id', $userId)->get()->getRowArray();
+        // Ambil data siswa berdasarkan user_id
+        $siswa_info = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
         
         // Ambil data pembimbing jika ada
         $pembimbing_info = null;
@@ -36,30 +40,31 @@ class Siswa extends BaseController
                                         ->getRowArray();
         }
         
-        // Statistik log aktivitas
-        $total_log = $this->db->table('log_aktivitas')
-                              ->where('siswa_id', $userId)
+        // Statistik log aktivitas berdasarkan siswa_id
+        $siswaId = $siswa_info ? $siswa_info['id'] : 0;
+        
+        $totalLog = $this->db->table('log_aktivitas')
+                              ->where('siswa_id', $siswaId)
                               ->countAllResults();
         
-        $log_bulan_ini = $this->db->table('log_aktivitas')
-                                  ->where('siswa_id', $userId)
-                                  ->where('EXTRACT(MONTH FROM tanggal)', date('m'))
-                                  ->where('EXTRACT(YEAR FROM tanggal)', date('Y'))
-                                  ->countAllResults();
-        
-        $disetujui = $this->db->table('log_aktivitas')
-                              ->where('siswa_id', $userId)
+        $logApproved = $this->db->table('log_aktivitas')
+                              ->where('siswa_id', $siswaId)
                               ->where('status', 'disetujui')
                               ->countAllResults();
         
-        $menunggu = $this->db->table('log_aktivitas')
-                             ->where('siswa_id', $userId)
+        $logPending = $this->db->table('log_aktivitas')
+                             ->where('siswa_id', $siswaId)
                              ->where('status', 'menunggu')
                              ->countAllResults();
         
+        $logRevisi = $this->db->table('log_aktivitas')
+                             ->where('siswa_id', $siswaId)
+                             ->where('status', 'revisi')
+                             ->countAllResults();
+        
         // Ambil aktivitas terbaru (5 log terakhir)
-        $recent_activities = $this->db->table('log_aktivitas')
-                                      ->where('siswa_id', $userId)
+        $recentActivities = $this->db->table('log_aktivitas')
+                                      ->where('siswa_id', $siswaId)
                                       ->orderBy('created_at', 'DESC')
                                       ->limit(5)
                                       ->get()
@@ -69,11 +74,11 @@ class Siswa extends BaseController
             'title' => 'Dashboard Siswa - SIMAMANG',
             'siswa_info' => $siswa_info,
             'pembimbing_info' => $pembimbing_info,
-            'total_log' => $total_log,
-            'log_bulan_ini' => $log_bulan_ini,
-            'disetujui' => $disetujui,
-            'menunggu' => $menunggu,
-            'recent_activities' => $recent_activities
+            'totalLog' => $totalLog,
+            'logApproved' => $logApproved,
+            'logPending' => $logPending,
+            'logRevisi' => $logRevisi,
+            'recentActivities' => $recentActivities
         ];
         
         return view('siswa/dashboard', $data);
@@ -106,8 +111,8 @@ class Siswa extends BaseController
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
             
-            // Cek apakah siswa dengan ID tersebut ada
-            $siswa = $this->db->table('siswa')->where('id', $userId)->get()->getRowArray();
+            // Cek apakah siswa dengan user_id tersebut ada
+            $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
             if (!$siswa) {
                 return redirect()->back()->withInput()->with('error', 'Data siswa tidak ditemukan');
             }
@@ -148,7 +153,7 @@ class Siswa extends BaseController
             
             // Simpan log
             $logData = [
-                'siswa_id' => $userId,
+                'siswa_id' => $siswa['id'],
                 'tanggal' => $request->getPost('tanggal'),
                 'jam_mulai' => $request->getPost('jam_mulai'),
                 'jam_selesai' => $request->getPost('jam_selesai'),
@@ -177,12 +182,18 @@ class Siswa extends BaseController
             $userId = $this->session->get('user_id');
             $request = service('request');
             
+            // Ambil data siswa berdasarkan user_id
+            $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+            if (!$siswa) {
+                return redirect()->to('/siswa/dashboard')->with('error', 'Data siswa tidak ditemukan');
+            }
+            
             // Build query
             $query = $this->db->table('log_aktivitas')
                               ->select('log_aktivitas.*, komentar_pembimbing.komentar, pembimbing.nama as nama_pembimbing')
                               ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
                               ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
-                              ->where('log_aktivitas.siswa_id', $userId);
+                              ->where('log_aktivitas.siswa_id', $siswa['id']);
             
             // Apply filters
             $status = $request->getGet('status');
@@ -222,6 +233,12 @@ class Siswa extends BaseController
         try {
             $userId = $this->session->get('user_id');
             
+            // Ambil data siswa berdasarkan user_id
+            $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+            if (!$siswa) {
+                return redirect()->to('/siswa/dashboard')->with('error', 'Data siswa tidak ditemukan');
+            }
+            
             // Ambil log dengan komentar pembimbing
             $log = $this->db->table('log_aktivitas')
                             ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as nama_pembimbing')
@@ -232,7 +249,7 @@ class Siswa extends BaseController
                             ->getRowArray();
             
             // Pastikan log milik siswa yang sedang login
-            if (!$log || $log['siswa_id'] != $userId) {
+            if (!$log || $log['siswa_id'] != $siswa['id']) {
                 return redirect()->to('/siswa/riwayat')->with('error', 'Log tidak ditemukan');
             }
             
@@ -258,6 +275,111 @@ class Siswa extends BaseController
         return view('siswa/laporan', $data);
     }
 
+    public function laporanMingguIni()
+    {
+        $userId = $this->session->get('user_id');
+        
+        // Hitung tanggal awal dan akhir minggu ini
+        $startOfWeek = date('Y-m-d', strtotime('monday this week'));
+        $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
+        
+        // Ambil data siswa dan log aktivitas minggu ini
+        $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+        if (!$siswa) {
+            return redirect()->to('/siswa/dashboard')->with('error', 'Data siswa tidak ditemukan');
+        }
+        
+        $logs = $this->db->table('log_aktivitas')
+                         ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
+                         ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
+                         ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
+                         ->where('log_aktivitas.siswa_id', $siswa['id'])
+                         ->where('log_aktivitas.tanggal >=', $startOfWeek)
+                         ->where('log_aktivitas.tanggal <=', $endOfWeek)
+                         ->orderBy('log_aktivitas.tanggal', 'ASC')
+                         ->get()
+                         ->getResultArray();
+        
+        $data = [
+            'title' => 'Laporan Minggu Ini - SIMAMANG',
+            'siswa' => $siswa,
+            'logs' => $logs,
+            'startDate' => $startOfWeek,
+            'endDate' => $endOfWeek,
+            'period' => 'Minggu Ini'
+        ];
+        
+        return view('siswa/laporan_cepat', $data);
+    }
+    
+    public function laporanBulanIni()
+    {
+        $userId = $this->session->get('user_id');
+        
+        // Hitung tanggal awal dan akhir bulan ini
+        $startOfMonth = date('Y-m-01');
+        $endOfMonth = date('Y-m-t');
+        
+        // Ambil data siswa dan log aktivitas bulan ini
+        $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+        if (!$siswa) {
+            return redirect()->to('/siswa/dashboard')->with('error', 'Data siswa tidak ditemukan');
+        }
+        
+        $logs = $this->db->table('log_aktivitas')
+                         ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
+                         ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
+                         ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
+                         ->where('log_aktivitas.siswa_id', $siswa['id'])
+                         ->where('log_aktivitas.tanggal >=', $startOfMonth)
+                         ->where('log_aktivitas.tanggal <=', $endOfMonth)
+                         ->orderBy('log_aktivitas.tanggal', 'ASC')
+                         ->get()
+                         ->getResultArray();
+        
+        $data = [
+            'title' => 'Laporan Bulan Ini - SIMAMANG',
+            'siswa' => $siswa,
+            'logs' => $logs,
+            'startDate' => $startOfMonth,
+            'endDate' => $endOfMonth,
+            'period' => 'Bulan Ini'
+        ];
+        
+        return view('siswa/laporan_cepat', $data);
+    }
+    
+    public function laporanSemuaAktivitas()
+    {
+        $userId = $this->session->get('user_id');
+        
+        // Ambil data siswa dan semua log aktivitas
+        $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+        if (!$siswa) {
+            return redirect()->to('/siswa/dashboard')->with('error', 'Data siswa tidak ditemukan');
+        }
+        
+        $logs = $this->db->table('log_aktivitas')
+                         ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
+                         ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
+                         ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
+                         ->where('log_aktivitas.siswa_id', $siswa['id'])
+                         ->orderBy('log_aktivitas.tanggal', 'ASC')
+                         ->get()
+                         ->getResultArray();
+        
+        $data = [
+            'title' => 'Laporan Semua Aktivitas - SIMAMANG',
+            'siswa' => $siswa,
+            'logs' => $logs,
+            'startDate' => null,
+            'endDate' => null,
+            'period' => 'Semua Aktivitas'
+        ];
+        
+        return view('siswa/laporan_cepat', $data);
+    }
+
     public function generateLaporan()
     {
         $request = service('request');
@@ -270,25 +392,186 @@ class Siswa extends BaseController
             return redirect()->back()->with('error', 'Tanggal awal dan akhir harus diisi');
         }
         
-        $table = $this->session->get('table');
-        $user = $this->db->table($table)->where('id', $userId)->get()->getRowArray();
+        // Ambil data siswa dan log beserta komentar
+        $siswa = $this->db->table('siswa')->where('id', $userId)->get()->getRowArray();
         $logs = $this->db->table('log_aktivitas')
-                         ->where('siswa_id', $userId)
-                         ->where('tanggal >=', $startDate)
-                         ->where('tanggal <=', $endDate)
-                         ->orderBy('tanggal', 'ASC')
+                         ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
+                         ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
+                         ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
+                         ->where('log_aktivitas.siswa_id', $userId)
+                         ->where('log_aktivitas.tanggal >=', $startDate)
+                         ->where('log_aktivitas.tanggal <=', $endDate)
+                         ->orderBy('log_aktivitas.tanggal', 'ASC')
                          ->get()
                          ->getResultArray();
-        
-        // Generate PDF (akan diimplementasikan nanti)
-        $data = [
-            'user' => $user,
+
+        // Hitung ringkasan untuk PDF (kurangi kerja di template)
+        $disetujuiCount = 0; $revisiCount = 0; $menungguCount = 0; $totalHours = 0.0;
+        foreach ($logs as $lg) {
+            $status = $lg['status'] ?? 'menunggu';
+            if ($status === 'disetujui') $disetujuiCount++;
+            elseif ($status === 'revisi') $revisiCount++;
+            else $menungguCount++;
+            $start = strtotime($lg['jam_mulai']);
+            $end = strtotime($lg['jam_selesai']);
+            if ($start && $end && $end > $start) {
+                $totalHours += ($end - $start) / 3600;
+            }
+        }
+
+        // Render view minimal khusus PDF (tanpa layout & asset eksternal)
+        $html = view('siswa/pdf_laporan', [
+            'siswa' => $siswa,
             'logs' => $logs,
             'startDate' => $startDate,
-            'endDate' => $endDate
-        ];
+            'endDate' => $endDate,
+            'disetujuiCount' => $disetujuiCount,
+            'revisiCount' => $revisiCount,
+            'menungguCount' => $menungguCount,
+            'totalHours' => round($totalHours, 1)
+        ]);
+
+        // Generate PDF menggunakan Dompdf
+        try {
+            $options = new \Dompdf\Options();
+            $options->set('defaultFont', 'DejaVu Sans');
+            $options->set('isRemoteEnabled', false); // hindari request eksternal agar cepat
+            $options->set('isHtml5ParserEnabled', true);
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            // Pastikan tidak ada output lain yang bocor ke respons
+            if (ob_get_level() > 0) { @ob_end_clean(); }
+
+            $filename = 'Laporan_Magang_' . ($siswa['nama'] ?? 'Siswa') . '_' . date('Ymd_His') . '.pdf';
+            $pdf = $dompdf->output();
+            return $this->response
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'application/pdf')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->setBody($pdf);
+        } catch (\Throwable $e) {
+            log_message('error', 'PDF generation failed: ' . $e->getMessage());
+            // Fallback ke preview jika ada masalah PDF
+            return view('siswa/preview_laporan', [
+                'title' => 'Laporan Magang - ' . ($siswa['nama'] ?? 'Siswa'),
+                'siswa' => $siswa,
+                'logs' => $logs,
+                'startDate' => $startDate,
+                'endDate' => $endDate
+            ]);
+        }
+    }
+
+    public function generateLaporanRapid()
+    {
+        $request = service('request');
+        $userId = $this->session->get('user_id');
+        $period = $request->getGet('period');
         
-        // Untuk sementara, tampilkan preview
-        return view('siswa/preview_laporan', $data);
+        // Tentukan rentang tanggal berdasarkan period
+        $startDate = null;
+        $endDate = null;
+        $periodTitle = '';
+        
+        switch ($period) {
+            case 'week':
+                $startDate = date('Y-m-d', strtotime('monday this week'));
+                $endDate = date('Y-m-d', strtotime('sunday this week'));
+                $periodTitle = 'Minggu Ini';
+                break;
+            case 'month':
+                $startDate = date('Y-m-01');
+                $endDate = date('Y-m-t');
+                $periodTitle = 'Bulan Ini';
+                break;
+            case 'all':
+                $startDate = null;
+                $endDate = null;
+                $periodTitle = 'Semua Aktivitas';
+                break;
+            default:
+                return redirect()->to('/siswa/laporan')->with('error', 'Periode tidak valid');
+        }
+        
+        // Ambil data siswa dan log aktivitas
+        $siswa = $this->db->table('siswa')->where('id', $userId)->get()->getRowArray();
+        
+        $query = $this->db->table('log_aktivitas')
+                         ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
+                         ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
+                         ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
+                         ->where('log_aktivitas.siswa_id', $userId);
+        
+        if ($startDate && $endDate) {
+            $query->where('log_aktivitas.tanggal >=', $startDate)
+                  ->where('log_aktivitas.tanggal <=', $endDate);
+        }
+        
+        $logs = $query->orderBy('log_aktivitas.tanggal', 'ASC')
+                      ->get()
+                      ->getResultArray();
+
+        // Hitung ringkasan untuk PDF
+        $disetujuiCount = 0; $revisiCount = 0; $menungguCount = 0; $totalHours = 0.0;
+        foreach ($logs as $lg) {
+            $status = $lg['status'] ?? 'menunggu';
+            if ($status === 'disetujui') $disetujuiCount++;
+            elseif ($status === 'revisi') $revisiCount++;
+            else $menungguCount++;
+            $start = strtotime($lg['jam_mulai']);
+            $end = strtotime($lg['jam_selesai']);
+            if ($start && $end && $end > $start) {
+                $totalHours += ($end - $start) / 3600;
+            }
+        }
+
+        // Render view minimal khusus PDF
+        $html = view('siswa/pdf_laporan', [
+            'siswa' => $siswa,
+            'logs' => $logs,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'disetujuiCount' => $disetujuiCount,
+            'revisiCount' => $revisiCount,
+            'menungguCount' => $menungguCount,
+            'totalHours' => round($totalHours, 1),
+            'periodTitle' => $periodTitle
+        ]);
+
+        // Generate PDF menggunakan Dompdf
+        try {
+            $options = new \Dompdf\Options();
+            $options->set('defaultFont', 'DejaVu Sans');
+            $options->set('isRemoteEnabled', false);
+            $options->set('isHtml5ParserEnabled', true);
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            if (ob_get_level() > 0) { @ob_end_clean(); }
+
+            $filename = 'Laporan_' . $periodTitle . '_' . ($siswa['nama'] ?? 'Siswa') . '_' . date('Ymd_His') . '.pdf';
+            $pdf = $dompdf->output();
+            return $this->response
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'application/pdf')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->setBody($pdf);
+        } catch (\Throwable $e) {
+            log_message('error', 'PDF generation failed: ' . $e->getMessage());
+            // Fallback ke preview
+            return view('siswa/preview_laporan', [
+                'title' => 'Laporan ' . $periodTitle . ' - ' . ($siswa['nama'] ?? 'Siswa'),
+                'siswa' => $siswa,
+                'logs' => $logs,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'periodTitle' => $periodTitle
+            ]);
+        }
     }
 }

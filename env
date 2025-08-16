@@ -30,23 +30,23 @@ app.baseURL = 'http://localhost:8080/'
 # DATABASE
 #--------------------------------------------------------------------
 
-database.default.hostname = localhost
-database.default.database = simamang
-database.default.username = postgres
-database.default.password = postgres
-database.default.DBDriver = PostgreSQL
-database.default.port = 5432
+##.default.hostname = 'localhost'
+#.default.# = 'simamang'
+#.default.username = 'postgres'
+#.default.password = 'postgres'
+#.default.DBDriver = 'PostgreSQL'
+#.default.port = 5432
 
 # If you use MySQLi as tests, first update the values of Config\Database::$tests.
-# database.tests.hostname = localhost
-# database.tests.database = ci4_test
-# database.tests.username = root
-# database.tests.password = root
-# database.tests.DBDriver = MySQLi
-# database.tests.DBPrefix =
-# database.tests.charset = utf8mb4
-# database.tests.DBCollat = utf8mb4_general_ci
-# database.tests.port = 3306
+database.default.hostname = '192.168.2.198'
+database.default.database = 'dev_simamang'
+database.default.username = 'dev_simamang'
+database.default.password = 'NWyaTdmyWPZXZbsp'
+database.default.DBDriver = 'MySQLi'
+database.default.DBPrefix = ''
+database.default.charset = 'utf8mb4'
+database.default.DBCollat = 'utf8mb4_general_ci'
+database.default.port = 3306
 
 #--------------------------------------------------------------------
 # ENCRYPTION

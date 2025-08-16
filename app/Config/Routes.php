@@ -6,6 +6,10 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
+// File upload routes - Place these FIRST to avoid conflicts
+$routes->get('uploads/bukti/(:segment)', 'Uploads::bukti/$1');
+$routes->get('uploads/profile/(:segment)', 'Uploads::profile/$1');
+
 // Default routes
 $routes->get('/', 'Home::index');
 
@@ -26,6 +30,12 @@ $routes->group('siswa', ['filter' => 'auth:siswa'], function($routes) {
     $routes->get('detail-log/(:num)', 'Siswa::detailLog/$1');
     $routes->get('laporan', 'Siswa::laporan');
     $routes->post('generate-laporan', 'Siswa::generateLaporan');
+    $routes->get('generate-laporan-rapid', 'Siswa::generateLaporanRapid');
+    
+    // Laporan Cepat
+    $routes->get('laporan-minggu-ini', 'Siswa::laporanMingguIni');
+    $routes->get('laporan-bulan-ini', 'Siswa::laporanBulanIni');
+    $routes->get('laporan-semua-aktivitas', 'Siswa::laporanSemuaAktivitas');
 });
 
 // Pembimbing routes
@@ -34,23 +44,19 @@ $routes->group('pembimbing', ['filter' => 'auth:pembimbing'], function($routes) 
     $routes->get('aktivitas-siswa', 'Pembimbing::aktivitasSiswa');
     $routes->get('log-siswa/(:num)', 'Pembimbing::logSiswa/$1');
     $routes->get('detail-log/(:num)', 'Pembimbing::detailLog/$1');
+    $routes->get('komentar', 'Pembimbing::komentar');
     $routes->post('beri-komentar', 'Pembimbing::beriKomentar');
     $routes->post('validasi-log', 'Pembimbing::validasiLog');
 });
 
-// File upload route
-$routes->get('uploads/bukti/(:segment)', function($filename) {
-    $filepath = WRITEPATH . 'uploads/bukti/' . $filename;
-    if (file_exists($filepath)) {
-        $mime = mime_content_type($filepath);
-        header('Content-Type: ' . $mime);
-        header('Content-Disposition: inline; filename="' . $filename . '"');
-        readfile($filepath);
-        exit;
-    } else {
-        throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan');
-    }
+// Profile routes (accessible by all authenticated users)
+$routes->group('profile', ['filter' => 'auth'], function($routes) {
+    $routes->get('/', 'Profile::index');
+    $routes->post('update-photo', 'Profile::updatePhoto');
+    $routes->post('change-password', 'Profile::changePassword');
 });
+
+
 
 // Admin routes
 $routes->group('admin', ['filter' => 'auth:admin'], function($routes) {

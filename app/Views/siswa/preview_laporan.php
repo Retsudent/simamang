@@ -69,9 +69,9 @@
                                         $revisi = count(array_filter($logs, fn($log) => $log['status'] == 'revisi'));
                                         $menunggu = count(array_filter($logs, fn($log) => $log['status'] == 'menunggu'));
                                         ?>
-                                        <span class="badge badge-success"><?= $disetujui ?> Disetujui</span>
-                                        <span class="badge badge-warning"><?= $revisi ?> Revisi</span>
-                                        <span class="badge badge-secondary"><?= $menunggu ?> Menunggu</span>
+                                        <span class="badge bg-success"><?= $disetujui ?> Disetujui</span>
+                                        <span class="badge bg-warning"><?= $revisi ?> Revisi</span>
+                                        <span class="badge bg-secondary"><?= $menunggu ?> Menunggu</span>
                                     </td>
                                 </tr>
                             </table>
@@ -224,7 +224,7 @@
                                                 $hours = floor($duration / 3600);
                                                 $minutes = floor(($duration % 3600) / 60);
                                                 ?>
-                                                <span class="badge badge-info"><?= $hours ?>j <?= $minutes ?>m</span>
+                                                <span class="badge bg-info"><?= $hours ?>j <?= $minutes ?>m</span>
                                             </td>
                                             <td>
                                                 <div class="text-justify" style="max-width: 400px;">
@@ -234,13 +234,13 @@
                                             <td>
                                                 <?php
                                                 $statusClass = match($log['status']) {
-                                                    'disetujui' => 'badge-success',
-                                                    'revisi' => 'badge-warning',
-                                                    default => 'badge-secondary'
+                                                    'disetujui' => 'bg-success',
+                                                    'revisi' => 'bg-warning',
+                                                    default => 'bg-secondary'
                                                 };
                                                 $statusText = ucfirst($log['status']);
                                                 ?>
-                                                <span class="badge <?= $statusClass ?> badge-pill"><?= $statusText ?></span>
+                                                <span class="badge <?= $statusClass ?> rounded-pill"><?= $statusText ?></span>
                                             </td>
                                             <td>
                                                 <?php if (isset($log['komentar']) && $log['komentar']): ?>

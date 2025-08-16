@@ -194,7 +194,7 @@
                                                 $hours = floor($duration / 3600);
                                                 $minutes = floor(($duration % 3600) / 60);
                                                 ?>
-                                                <span class="badge badge-info"><?= $hours ?>j <?= $minutes ?>m</span>
+                                                <span class="badge bg-info"><?= $hours ?>j <?= $minutes ?>m</span>
                                             </td>
                                             <td>
                                                 <div class="text-justify" style="max-width: 400px;">
@@ -203,14 +203,19 @@
                                             </td>
                                             <td>
                                                 <?php
-                                                $statusClass = match($log['status']) {
-                                                    'disetujui' => 'badge-success',
-                                                    'revisi' => 'badge-warning',
-                                                    default => 'badge-secondary'
+                                                $effectiveStatus = $log['status'] ?? '';
+                                                if (empty($effectiveStatus) && !empty($log['status_validasi'])) {
+                                                    $effectiveStatus = $log['status_validasi'];
+                                                }
+                                                $effectiveStatus = $effectiveStatus ?: 'menunggu';
+                                                $badgeClass = match($effectiveStatus) {
+                                                    'disetujui' => 'bg-success',
+                                                    'revisi' => 'bg-warning',
+                                                    'menunggu' => 'bg-secondary',
+                                                    default => 'bg-secondary'
                                                 };
-                                                $statusText = ucfirst($log['status']);
                                                 ?>
-                                                <span class="badge <?= $statusClass ?> badge-pill"><?= $statusText ?></span>
+                                                <span class="badge <?= $badgeClass ?> rounded-pill"><?= ucfirst($effectiveStatus) ?></span>
                                             </td>
                                             <td>
                                                 <?php if (isset($log['komentar']) && $log['komentar']): ?>

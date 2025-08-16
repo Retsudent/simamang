@@ -22,6 +22,8 @@
     <div class="card-body">
       <form method="post" action="<?= isset($siswa) ? base_url('admin/update-siswa/' . $siswa['id']) : base_url('admin/simpan-siswa') ?>">
         <?= csrf_field() ?>
+        
+
 
         <div class="mb-3">
           <label class="form-label">Nama Lengkap</label>
@@ -46,6 +48,21 @@
         <div class="mb-3">
           <label class="form-label">Tempat Magang</label>
           <input type="text" name="tempat_magang" class="form-control" value="<?= isset($siswa) ? esc($siswa['tempat_magang']) : old('tempat_magang') ?>" required>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Tanggal Mulai Magang</label>
+              <input type="date" name="tanggal_mulai_magang" class="form-control" value="<?= isset($siswa) ? esc($siswa['tanggal_mulai_magang'] ?? date('Y-m-d')) : (old('tanggal_mulai_magang') ?: date('Y-m-d')) ?>" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Tanggal Selesai Magang</label>
+              <input type="date" name="tanggal_selesai_magang" class="form-control" value="<?= isset($siswa) ? esc($siswa['tanggal_selesai_magang'] ?? date('Y-m-d', strtotime('+3 months'))) : (old('tanggal_selesai_magang') ?: date('Y-m-d', strtotime('+3 months'))) ?>" required>
+            </div>
+          </div>
         </div>
 
         <div class="d-flex gap-2">

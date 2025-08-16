@@ -23,22 +23,39 @@ class Pembimbing extends BaseController
 
     public function dashboard()
     {
+        // Load TimeHelper manually
+        helper('TimeHelper');
+        
         $userId = $this->session->get('user_id');
 
+        // Ambil data pembimbing berdasarkan user_id dari session
+        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        $pembimbingId = $pembimbing_info ? $pembimbing_info['id'] : 0;
+        
         // Ambil log menunggu untuk siswa yang dibimbing oleh pembimbing ini
         $pendingLogs = $this->db->table('log_aktivitas')
                                 ->select('log_aktivitas.*, siswa.nama as siswa_nama, siswa.nis, siswa.tempat_magang')
                                 ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
-                                ->where('siswa.pembimbing_id', $userId)
+                                ->where('siswa.pembimbing_id', $pembimbingId)
                                 ->where('log_aktivitas.status', 'menunggu')
                                 ->get()
                                 ->getResultArray();
+
+        // Ambil 5 aktivitas terbaru (semua status) untuk siswa bimbingan pembimbing ini
+        $recentActivities = $this->db->table('log_aktivitas')
+                                    ->select('log_aktivitas.*, siswa.nama as siswa_nama')
+                                    ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
+                                    ->where('siswa.pembimbing_id', $pembimbingId)
+                                    ->orderBy('log_aktivitas.created_at', 'DESC')
+                                    ->limit(5)
+                                    ->get()
+                                    ->getResultArray();
 
         // Hitung statistik status untuk siswa yang dibimbing oleh pembimbing ini
         $statusCountsRaw = $this->db->table('log_aktivitas')
                                 ->select('log_aktivitas.status, COUNT(*) as total')
                                 ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
-                                ->where('siswa.pembimbing_id', $userId)
+                                ->where('siswa.pembimbing_id', $pembimbingId)
                                 ->groupBy('log_aktivitas.status')
                                 ->get()
                                 ->getResultArray();
@@ -56,15 +73,32 @@ class Pembimbing extends BaseController
 
         // Hitung total siswa yang dibimbing oleh pembimbing ini
         $assignedCount = $this->db->table('siswa')
-                                 ->where('pembimbing_id', $userId)
+                                 ->where('pembimbing_id', $pembimbingId)
                                  ->where('status', 'aktif')
                                  ->countAllResults();
+
+        // Total log untuk seluruh siswa bimbingan
+        $totalLog = $this->db->table('log_aktivitas')
+                             ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
+                             ->where('siswa.pembimbing_id', $pembimbingId)
+                             ->countAllResults();
+
+        $logPending = (int) ($statusCounts['menunggu'] ?? 0);
+        $logApproved = (int) ($statusCounts['disetujui'] ?? 0);
+        $logRevisi = (int) ($statusCounts['revisi'] ?? 0);
 
         $data = [
             'title' => 'Dashboard Pembimbing - SIMAMANG',
             'pendingLogs' => $pendingLogs,
             'statusCounts' => $statusCounts,
             'assignedCount' => $assignedCount,
+            // Tambahkan alias sesuai yang dipakai View
+            'totalSiswa' => $assignedCount,
+            'totalLog' => $totalLog,
+            'logPending' => $logPending,
+            'logApproved' => $logApproved,
+            'logRevisi' => $logRevisi,
+            'recentActivities' => $recentActivities,
         ];
 
         return view('pembimbing/dashboard', $data);
@@ -73,6 +107,14 @@ class Pembimbing extends BaseController
     public function aktivitasSiswa()
     {
         $userId = $this->session->get('user_id');
+
+        // Ambil data pembimbing berdasarkan user_id
+        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        if (!$pembimbing_info) {
+            return redirect()->to('/pembimbing/dashboard')->with('error', 'Data pembimbing tidak ditemukan');
+        }
+        
+        $pembimbingId = $pembimbing_info['id'];
 
         $request = service('request');
         $search = $request->getGet('search');
@@ -84,10 +126,11 @@ class Pembimbing extends BaseController
                 "siswa.id, siswa.nama, siswa.username, siswa.nis, siswa.tempat_magang, siswa.status, " .
                 "COUNT(log_aktivitas.id) as total_log, " .
                 "SUM(CASE WHEN log_aktivitas.status = 'menunggu' THEN 1 ELSE 0 END) as menunggu_count, " .
-                "SUM(CASE WHEN log_aktivitas.status = 'disetujui' THEN 1 ELSE 0 END) as disetujui_count"
+                "SUM(CASE WHEN log_aktivitas.status = 'disetujui' THEN 1 ELSE 0 END) as disetujui_count, " .
+                "SUM(CASE WHEN log_aktivitas.status = 'revisi' THEN 1 ELSE 0 END) as revisi_count"
             )
             ->join('log_aktivitas', 'log_aktivitas.siswa_id = siswa.id', 'left')
-            ->where('siswa.pembimbing_id', $userId)
+            ->where('siswa.pembimbing_id', $pembimbingId)
             ->where('siswa.status', 'aktif')
             ->groupBy('siswa.id, siswa.nama, siswa.username, siswa.nis, siswa.tempat_magang, siswa.status');
 
@@ -125,19 +168,43 @@ class Pembimbing extends BaseController
             return redirect()->to('/pembimbing/aktivitas-siswa')->with('error', 'Siswa tidak ditemukan');
         }
 
-        // Ambil log aktivitas siswa
-        $logs = $this->db->table('log_aktivitas')
-                         ->where('siswa_id', $siswaId)
-                         ->orderBy('created_at', 'DESC')
-                         ->get()
-                         ->getResultArray();
+        $userId = $this->session->get('user_id');
+        $request = service('request');
+        $status = $request->getGet('status');
+        $startDate = $request->getGet('start_date');
+        $endDate = $request->getGet('end_date');
+
+        // Ambil data pembimbing berdasarkan user_id
+        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        if (!$pembimbing_info) {
+            return redirect()->to('/pembimbing/dashboard')->with('error', 'Data pembimbing tidak ditemukan');
+        }
         
+        $pembimbingId = $pembimbing_info['id'];
+        
+        $builder = $this->db->table('log_aktivitas')
+                             ->select('log_aktivitas.*, kp.komentar, kp.status_validasi, kp.created_at as komentar_at')
+                             ->join('komentar_pembimbing kp', 'kp.log_id = log_aktivitas.id AND kp.pembimbing_id = ' . (int) $pembimbingId, 'left')
+                             ->where('log_aktivitas.siswa_id', $siswaId);
+
+        if (!empty($status)) {
+            $builder->where('log_aktivitas.status', $status);
+        }
+        if (!empty($startDate)) {
+            $builder->where('log_aktivitas.tanggal >=', $startDate);
+        }
+        if (!empty($endDate)) {
+            $builder->where('log_aktivitas.tanggal <=', $endDate);
+        }
+
+        $logs = $builder->orderBy('log_aktivitas.created_at', 'DESC')->get()->getResultArray();
+
         $data = [
             'title' => 'Log Aktivitas Siswa - SIMAMANG',
             'siswa' => $siswa,
             'logs' => $logs
         ];
-        
+
         return view('pembimbing/log_siswa', $data);
     }
 
@@ -176,7 +243,15 @@ class Pembimbing extends BaseController
     {
         try {
             $request = service('request');
-            $pembimbingId = $this->session->get('user_id');
+            $userId = $this->session->get('user_id');
+            
+            // Ambil data pembimbing berdasarkan user_id
+            $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+            if (!$pembimbing_info) {
+                return redirect()->back()->with('error', 'Data pembimbing tidak ditemukan');
+            }
+            
+            $pembimbingId = $pembimbing_info['id'];
             
             $logId = $request->getPost('log_id');
             $komentar = $request->getPost('komentar');
@@ -251,5 +326,33 @@ class Pembimbing extends BaseController
         } else {
             return redirect()->back()->with('error', 'Gagal mengupdate status log');
         }
+    }
+
+    public function komentar()
+    {
+        $userId = $this->session->get('user_id');
+        
+        // Ambil data pembimbing berdasarkan user_id
+        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        if (!$pembimbing_info) {
+            return redirect()->to('/pembimbing/dashboard')->with('error', 'Data pembimbing tidak ditemukan');
+        }
+        
+        $pembimbingId = $pembimbing_info['id'];
+        
+        // Tampilkan log yang berstatus menunggu untuk siswa bimbingan pembimbing ini
+        $logs = $this->db->table('log_aktivitas')
+                         ->select('log_aktivitas.*, siswa.nama as siswa_nama, siswa.nis')
+                         ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
+                         ->where('siswa.pembimbing_id', $pembimbingId)
+                         ->where('log_aktivitas.status', 'menunggu')
+                         ->orderBy('log_aktivitas.created_at', 'DESC')
+                         ->get()
+                         ->getResultArray();
+
+        return view('pembimbing/komentar', [
+            'title' => 'Komentar & Validasi - SIMAMANG',
+            'logs' => $logs
+        ]);
     }
 }

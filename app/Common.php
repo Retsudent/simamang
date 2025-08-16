@@ -13,3 +13,8 @@
  *
  * @see: https://codeigniter.com/user_guide/extending/common.html
  */
+
+// Load TimeHelper globally
+if (file_exists(APPPATH . 'Helpers/TimeHelper.php')) {
+    require_once APPPATH . 'Helpers/TimeHelper.php';
+}

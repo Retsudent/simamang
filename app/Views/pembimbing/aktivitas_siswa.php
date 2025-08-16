@@ -64,12 +64,13 @@
                         <div class="col-md-2">
                             <div class="form-group">
                                 <label>&nbsp;</label>
-                                <div class="d-flex">
-                                    <button type="submit" class="btn btn-primary mr-2">
-                                        <i class="fas fa-search mr-1"></i>Cari
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="submit" class="btn btn-primary d-inline-flex align-items-center">
+                                        <i class="bi bi-search me-1"></i>
+                                        Filter
                                     </button>
-                                    <a href="<?= base_url('pembimbing/aktivitas-siswa') ?>" class="btn btn-secondary">
-                                        <i class="fas fa-undo"></i>
+                                    <a href="<?= base_url('pembimbing/aktivitas-siswa') ?>" class="btn btn-secondary d-inline-flex align-items-center" title="Reset filter">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
                                     </a>
                                 </div>
                             </div>
@@ -117,17 +118,21 @@
                                                     
                                                     <!-- Quick Stats -->
                                                     <div class="row text-center">
-                                                        <div class="col-4">
+                                                        <div class="col-3">
                                                             <div class="h6 mb-0 font-weight-bold text-primary"><?= (int)($s['total_log'] ?? 0) ?></div>
                                                             <small class="text-muted">Total Log</small>
                                                         </div>
-                                                        <div class="col-4">
+                                                        <div class="col-3">
                                                             <div class="h6 mb-0 font-weight-bold text-warning"><?= (int)($s['menunggu_count'] ?? 0) ?></div>
                                                             <small class="text-muted">Menunggu</small>
                                                         </div>
-                                                        <div class="col-4">
+                                                        <div class="col-3">
                                                             <div class="h6 mb-0 font-weight-bold text-success"><?= (int)($s['disetujui_count'] ?? 0) ?></div>
                                                             <small class="text-muted">Disetujui</small>
+                                                        </div>
+                                                        <div class="col-3">
+                                                            <div class="h6 mb-0 font-weight-bold text-danger"><?= (int)($s['revisi_count'] ?? 0) ?></div>
+                                                            <small class="text-muted">Direvisi</small>
                                                         </div>
                                                     </div>
                                                 </div>
