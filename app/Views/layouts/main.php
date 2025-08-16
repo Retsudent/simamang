@@ -885,9 +885,9 @@
             <div class="top-nav-right">
                 <div class="user-menu dropdown">
                     <div class="user-avatar" data-bs-toggle="dropdown" style="cursor: pointer;">
-                        <?php if (session()->get('foto_profil')): ?>
-                            <img src="<?= base_url('photo.php?file=' . session()->get('foto_profil') . '&type=profile') ?>" 
-                                 alt="Foto Profil" 
+                                        <?php if (session()->get('foto_profil')): ?>
+                    <img src="<?= base_url('photo.php?file=' . session()->get('foto_profil') . '&type=profile&v=' . time()) ?>"
+                         alt="Foto Profil" 
                                  style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                         <?php else: ?>
                             <?= strtoupper(substr(session()->get('nama') ?? 'U', 0, 1)) ?>

@@ -181,7 +181,8 @@ class Profile extends BaseController
             // Update session foto_profil
             $this->session->set('foto_profil', $newName);
             
-            return redirect()->to('/profile')->with('success', 'Foto profil berhasil diperbarui');
+            // Clear cache dan redirect dengan parameter untuk memaksa refresh
+            return redirect()->to('/profile?refresh=' . time())->with('success', 'Foto profil berhasil diperbarui');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
         }

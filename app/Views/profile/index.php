@@ -29,9 +29,13 @@
                 <div class="card-header">Foto Profil</div>
                 <div class="card-body text-center">
                     <!-- Profile picture image-->
-                    <?php if (isset($user['foto_profil']) && $user['foto_profil']): ?>
+                    <?php 
+                    // Prioritaskan session data jika ada, fallback ke database data
+                    $fotoProfil = session()->get('foto_profil') ?: ($user['foto_profil'] ?? null);
+                    ?>
+                    <?php if ($fotoProfil): ?>
                         <img class="img-account-profile rounded-circle mb-2" 
-                             src="<?= base_url('photo.php?file=' . $user['foto_profil'] . '&type=profile') ?>" 
+                             src="<?= base_url('photo.php?file=' . $fotoProfil . '&type=profile&v=' . time()) ?>" 
                              alt="Foto Profil" 
                              style="width: 150px; height: 150px; object-fit: cover;">
                     <?php else: ?>
