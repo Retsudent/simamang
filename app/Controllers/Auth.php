@@ -32,21 +32,38 @@ class Auth extends Controller
             $username = $request->getPost('username');
             $password = $request->getPost('password');
 
+            log_message('info', 'Login attempt for username: ' . $username);
+
             if (!$username || !$password) {
                 return redirect()->back()->with('error', 'Username dan password wajib diisi')->withInput();
+            }
+
+            // Test database connection first
+            try {
+                $this->db->connect();
+                log_message('info', 'Database connection successful');
+            } catch (\Exception $e) {
+                log_message('error', 'Database connection failed: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Koneksi database gagal. Silakan coba lagi.')->withInput();
             }
 
             // Cek di semua tabel (admin, pembimbing, siswa)
             $user = $this->findUserInAllTables($username);
             
             if (!$user) {
+                log_message('info', 'User not found: ' . $username);
                 return redirect()->back()->with('error', 'User tidak ditemukan')->withInput();
             }
 
+            log_message('info', 'User found: ' . $username . ' in table: ' . $user['table']);
+
             // password hashing: gunakan password_hash saat menyimpan password
             if (!password_verify($password, $user['password'])) {
+                log_message('info', 'Password verification failed for: ' . $username);
                 return redirect()->back()->with('error', 'Password salah')->withInput();
             }
+
+            log_message('info', 'Password verification successful for: ' . $username);
 
             // set session
             $this->session->set([
@@ -59,9 +76,12 @@ class Auth extends Controller
                 'foto_profil' => $user['foto_profil'] ?? null // tambahkan foto profil
             ]);
 
+            log_message('info', 'Session set successfully for: ' . $username);
+
             return redirect()->to($this->roleRedirect($user['role']));
         } catch (\Exception $e) {
             log_message('error', 'Login error: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.')->withInput();
         }
     }
@@ -82,45 +102,64 @@ class Auth extends Controller
             }
 
             // Fallback: Cek di tabel role-specific (untuk backward compatibility)
+            log_message('info', 'Searching for user: ' . $username);
+            
+            // Set execution time limit
+            set_time_limit(30);
+            
+            // Cek di tabel admin first (most common)
+            log_message('info', 'Checking admin table...');
             $admin = $this->db->table('admin')
                               ->where('username', $username)
                               ->where('status', 'aktif')
+                              ->limit(1)
                               ->get()
                               ->getRowArray();
             
             if ($admin) {
+                log_message('info', 'User found in admin table');
                 $admin['role'] = 'admin';
                 $admin['table'] = 'admin';
                 return $admin;
             }
 
+            // Cek di tabel pembimbing
+            log_message('info', 'Checking pembimbing table...');
             $pembimbing = $this->db->table('pembimbing')
                                    ->where('username', $username)
                                    ->where('status', 'aktif')
+                                   ->limit(1)
                                    ->get()
                                    ->getRowArray();
             
             if ($pembimbing) {
+                log_message('info', 'User found in pembimbing table');
                 $pembimbing['role'] = 'pembimbing';
                 $pembimbing['table'] = 'pembimbing';
                 return $pembimbing;
             }
 
+            // Cek di tabel siswa
+            log_message('info', 'Checking siswa table...');
             $siswa = $this->db->table('siswa')
                               ->where('username', $username)
                               ->where('status', 'aktif')
+                              ->limit(1)
                               ->get()
                               ->getRowArray();
             
             if ($siswa) {
+                log_message('info', 'User found in siswa table');
                 $siswa['role'] = 'siswa';
                 $siswa['table'] = 'siswa';
                 return $siswa;
             }
 
+            log_message('info', 'User not found in any table');
             return null;
         } catch (\Exception $e) {
             log_message('error', 'Database error in findUserInAllTables: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
             throw $e;
         }
     }

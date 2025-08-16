@@ -42,12 +42,16 @@ class Database extends Config
         'strictOn'   => false,
         'failover'   => [],
         'port'       => 3306,
+        'connect_timeout' => 30,
+        'read_timeout' => 30,
+        'write_timeout' => 30,
         'dateFormat' => [
             'date'     => 'Y-m-d',
             'datetime' => 'Y-m-d H:i:s',
             'time'     => 'H:i:s',
         ],
     ];
+    
 
 
     //    /**
