@@ -24,66 +24,89 @@
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 50%, var(--accent-color) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Animated Background */
-        body::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: float 20s ease-in-out infinite;
-            z-index: 0;
-        }
-
-        body::after {
-            content: '';
-            position: absolute;
-            bottom: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
-            animation: float 15s ease-in-out infinite reverse;
-            z-index: 0;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(180deg); }
+            padding: 2rem 1rem;
         }
 
         .login-container {
-            position: relative;
-            z-index: 1;
             width: 100%;
-            max-width: 400px;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .login-hero {
+            color: white;
+            text-align: center;
             padding: 2rem;
         }
 
-        .login-card {
-            background: var(--background-white);
-            border-radius: 1.5rem;
-            box-shadow: var(--shadow-lg);
-            overflow: hidden;
-            position: relative;
+        .login-hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .login-card::before {
+        .login-hero p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .feature-list {
+            list-style: none;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .feature-list i {
+            color: var(--accent-light);
+            font-size: 1.25rem;
+            width: 1.5rem;
+        }
+
+        .login-form-container {
+            background: var(--background-white);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow-xl);
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-form-container::before {
             content: '';
             position: absolute;
             top: 0;
@@ -95,10 +118,10 @@
 
         .login-header {
             text-align: center;
-            padding: 2rem 2rem 1rem;
+            margin-bottom: 2.5rem;
         }
 
-        .login-logo {
+        .login-header .logo {
             width: 4rem;
             height: 4rem;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
@@ -109,28 +132,18 @@
             margin: 0 auto 1rem;
             color: white;
             font-size: 2rem;
-            animation: pulse 2s ease-in-out infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .login-title {
+        .login-header h2 {
             font-size: 1.75rem;
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
         }
 
-        .login-subtitle {
+        .login-header p {
             color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        .login-body {
-            padding: 0 2rem 2rem;
+            font-size: 1rem;
         }
 
         .form-floating {
@@ -143,72 +156,54 @@
             padding: 1rem 1rem;
             font-size: 1rem;
             transition: all 0.3s ease;
-            background: var(--background-light);
+            background: var(--background-white);
         }
 
         .form-control:focus {
             border-color: var(--primary-light);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            background: var(--background-white);
         }
 
-        .form-floating > label {
-            padding: 1rem 1rem;
+        .form-floating label {
             color: var(--text-secondary);
+            font-weight: 500;
         }
 
         .form-floating > .form-control:focus ~ label,
         .form-floating > .form-control:not(:placeholder-shown) ~ label {
             color: var(--primary-color);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .btn-login {
+            width: 100%;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
             border: none;
             border-radius: 0.75rem;
-            padding: 1rem 2rem;
-            font-weight: 600;
+            padding: 1rem;
             font-size: 1rem;
+            font-weight: 600;
             color: white;
-            width: 100%;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-login:hover::before {
-            left: 100%;
+            margin-bottom: 1.5rem;
         }
 
         .btn-login:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-lg);
         }
 
         .login-footer {
             text-align: center;
-            padding: 1.5rem 2rem;
-            background: var(--background-light);
-            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
         }
 
         .login-footer a {
             color: var(--primary-color);
             text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
+            font-weight: 600;
         }
 
         .login-footer a:hover {
@@ -220,7 +215,6 @@
             border-radius: 0.75rem;
             padding: 1rem 1.5rem;
             margin-bottom: 1.5rem;
-            font-weight: 500;
         }
 
         .alert-danger {
@@ -235,156 +229,35 @@
             border-left: 4px solid var(--accent-color);
         }
 
-        /* Floating elements */
-        .floating-element {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            animation: float-element 6s ease-in-out infinite;
-        }
-
-        .floating-element:nth-child(1) {
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .floating-element:nth-child(2) {
-            top: 60%;
-            right: 15%;
-            animation-delay: 2s;
-        }
-
-        .floating-element:nth-child(3) {
-            bottom: 30%;
-            left: 20%;
-            animation-delay: 4s;
-        }
-
-        @keyframes float-element {
-            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.3; }
-            50% { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
-        }
-
-        /* Responsive */
-        @media (max-width: 576px) {
+        @media (max-width: 768px) {
             .login-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .login-hero {
+                order: 2;
                 padding: 1rem;
             }
-            
-            .login-card {
-                border-radius: 1rem;
+            .login-hero h1 {
+                font-size: 2rem;
             }
-            
-            .login-header {
-                padding: 1.5rem 1.5rem 1rem;
-            }
-            
-            .login-body {
-                padding: 0 1.5rem 1.5rem;
+            .login-form-container {
+                order: 1;
+                padding: 2rem;
             }
         }
-    </style>
-</head>
-<body>
-    <!-- Floating Elements -->
-    <div class="floating-element"></div>
-    <div class="floating-element"></div>
-    <div class="floating-element"></div>
 
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="login-logo">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-                <h1 class="login-title">SIMAMANG</h1>
-                <p class="login-subtitle">Sistem Monitoring Aktivitas Magang</p>
-            </div>
-
-            <div class="login-body">
-                <?php if (session()->getFlashdata('error')): ?>
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <?= session()->getFlashdata('error') ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (session()->getFlashdata('success')): ?>
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <?= session()->getFlashdata('success') ?>
-                    </div>
-                <?php endif; ?>
-
-                <form action="<?= base_url('login') ?>" method="post">
-                    <?= csrf_field() ?>
-                    
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-                        <label for="username">
-                            <i class="bi bi-person me-2"></i>Username
-                        </label>
-                    </div>
-
-                    <div class="form-floating">
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                        <label for="password">
-                            <i class="bi bi-lock me-2"></i>Password
-                        </label>
-                    </div>
-
-                    <button type="submit" class="btn btn-login">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>
-                        Masuk ke SIMAMANG
-                    </button>
-                </form>
-            </div>
-
-            <div class="login-footer">
-                <p class="mb-0">
-                    Belum punya akun? 
-                    <a href="<?= base_url('register') ?>">Daftar di sini</a>
-                </p>
-=======
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            .login-form-container {
+                padding: 1.5rem;
+            }
+            .login-hero h1 {
+                font-size: 1.75rem;
+            }
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 50%, var(--accent-color) 100%);
-            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;
-        }
-        .login-container { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
-        .login-hero { color: white; text-align: center; padding: 2rem; }
-        .login-hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(135deg, #ffffff 0%, var(--accent-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .login-hero p { font-size: 1.125rem; opacity: 0.9; margin-bottom: 2rem; line-height: 1.7; }
-        .feature-list { list-style: none; text-align: left; max-width: 400px; margin: 0 auto; }
-        .feature-list li { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; font-size: 1rem; opacity: 0.9; }
-        .feature-list i { color: var(--accent-light); font-size: 1.25rem; width: 1.5rem; }
-        .login-form-container { background: var(--background-white); border-radius: 1.5rem; box-shadow: var(--shadow-xl); padding: 3rem; position: relative; overflow: hidden; }
-        .login-form-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); }
-        .login-header { text-align: center; margin-bottom: 2.5rem; }
-        .login-header .logo { width: 4rem; height: 4rem; background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 2rem; }
-        .login-header h2 { font-size: 1.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
-        .login-header p { color: var(--text-secondary); font-size: 1rem; }
-        .form-floating { margin-bottom: 1.5rem; }
-        .form-control { border: 2px solid var(--border-color); border-radius: 0.75rem; padding: 1rem 1rem; font-size: 1rem; transition: all 0.3s ease; background: var(--background-white); }
-        .form-control:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .form-floating label { color: var(--text-secondary); font-weight: 500; }
-        .form-floating > .form-control:focus ~ label, .form-floating > .form-control:not(:placeholder-shown) ~ label { color: var(--primary-color); font-weight: 600; }
-        .btn-login { width: 100%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%); border: none; border-radius: 0.75rem; padding: 1rem; font-size: 1rem; font-weight: 600; color: white; transition: all 0.3s ease; margin-bottom: 1.5rem; }
-        .btn-login:hover { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .login-footer { text-align: center; color: var(--text-secondary); font-size: 0.875rem; }
-        .login-footer a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
-        .login-footer a:hover { color: var(--primary-dark); }
-        .alert { border: none; border-radius: 0.75rem; padding: 1rem 1.5rem; margin-bottom: 1.5rem; }
-        .alert-danger { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #991b1b; border-left: 4px solid #ef4444; }
-        .alert-success { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #166534; border-left: 4px solid var(--accent-color); }
-        @media (max-width: 768px) { .login-container { grid-template-columns: 1fr; gap: 2rem; } .login-hero { order: 2; padding: 1rem; } .login-hero h1 { font-size: 2rem; } .login-form-container { order: 1; padding: 2rem; } }
-        @media (max-width: 480px) { body { padding: 1rem; } .login-form-container { padding: 1.5rem; } .login-hero h1 { font-size: 1.75rem; } }
     </style>
 </head>
 <body>
@@ -437,7 +310,9 @@
                     <label for="password"><i class="bi bi-lock me-2"></i>Password</label>
                 </div>
 
-                <button type="submit" class="btn btn-login"><i class="bi bi-box-arrow-in-right me-2"></i>Masuk ke SIMAMANG</button>
+                <button type="submit" class="btn btn-login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Masuk ke SIMAMANG
+                </button>
             </form>
 
             <div class="login-footer">
@@ -465,21 +340,23 @@
                 });
             });
 
-            // Add typing animation to title
-            const title = document.querySelector('.login-title');
-            const originalText = title.textContent;
-            title.textContent = '';
-            
-            let i = 0;
-            const typeWriter = () => {
-                if (i < originalText.length) {
-                    title.textContent += originalText.charAt(i);
-                    i++;
-                    setTimeout(typeWriter, 100);
-                }
-            };
-            
-            setTimeout(typeWriter, 500);
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    if (alert.classList.contains('alert-dismissible')) {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                });
+            }, 5000);
+
+            // Add loading state to form submission
+            document.querySelector('form').addEventListener('submit', function() {
+                const submitBtn = document.querySelector('.btn-login');
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+                submitBtn.disabled = true;
+            });
         });
     </script>
 </body>
