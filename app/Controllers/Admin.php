@@ -107,25 +107,50 @@ class Admin extends BaseController
             // Hash password
             $password = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
             
+            // Mulai transaction
+            $this->db->transStart();
+            
+            // 1. Insert ke tabel users (untuk autentikasi)
+            $userData = [
+                'nama' => $request->getPost('nama'),
+                'username' => $request->getPost('username'),
+                'password' => $password,
+                'role' => 'siswa',
+                'status' => 'aktif',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $this->db->table('users')->insert($userData);
+            $userId = $this->db->insertID();
+            
+            // 2. Insert ke tabel siswa (untuk data spesifik)
             $siswaData = [
                 'nama' => $request->getPost('nama'),
                 'username' => $request->getPost('username'),
                 'password' => $password,
                 'nis' => $request->getPost('nis'),
                 'tempat_magang' => $request->getPost('tempat_magang'),
-                'alamat_magang' => $request->getPost('tempat_magang'),
+                'alamat_magang' => $request->getPost('alamat_magang') ?: $request->getPost('tempat_magang'),
                 'tanggal_mulai_magang' => $request->getPost('tanggal_mulai_magang'),
                 'tanggal_selesai_magang' => $request->getPost('tanggal_selesai_magang'),
-                'status' => 'aktif'
+                'status' => 'aktif',
+                'created_at' => date('Y-m-d H:i:s')
             ];
             
-            if ($this->db->table('siswa')->insert($siswaData)) {
-                return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil ditambahkan');
-            } else {
-                return redirect()->back()->withInput()->with('error', 'Gagal menambahkan siswa');
+            $this->db->table('siswa')->insert($siswaData);
+            
+            // Commit transaction
+            $this->db->transComplete();
+            
+            if ($this->db->transStatus() === false) {
+                return redirect()->back()->withInput()->with('error', 'Gagal menambahkan siswa. Silakan coba lagi.');
             }
             
+            return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil ditambahkan');
+            
         } catch (\Exception $e) {
+            // Rollback jika ada error
+            $this->db->transRollback();
             log_message('error', 'Exception in simpanSiswa: ' . $e->getMessage());
             log_message('error', 'Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
@@ -210,11 +235,52 @@ class Admin extends BaseController
             return redirect()->to('/admin/kelola-siswa')->with('error', 'ID siswa tidak valid');
         }
         
-        // Soft delete - ubah status menjadi nonaktif
-        if ($this->db->table('siswa')->where('id', $id)->update(['status' => 'nonaktif'])) {
-            return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil dihapus');
-        } else {
-            return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus siswa');
+        try {
+            // Mulai transaction
+            $this->db->transStart();
+            
+            // Ambil data siswa untuk mendapatkan username
+            $siswa = $this->db->table('siswa')->where('id', $id)->get()->getRowArray();
+            if (!$siswa) {
+                return redirect()->to('/admin/kelola-siswa')->with('error', 'Data siswa tidak ditemukan');
+            }
+            
+            $username = $siswa['username'];
+            
+            // Hapus foto profil jika ada
+            if ($siswa['foto_profil']) {
+                $photoPath = WRITEPATH . 'uploads/profile/' . $siswa['foto_profil'];
+                if (file_exists($photoPath)) {
+                    unlink($photoPath);
+                }
+            }
+            
+            // Hapus data dari tabel siswa
+            $this->db->table('siswa')->where('id', $id)->delete();
+            
+            // Hapus data dari tabel users berdasarkan username
+            $this->db->table('users')->where('username', $username)->delete();
+            
+            // Hapus log aktivitas terkait
+            $this->db->table('log_aktivitas')->where('siswa_id', $id)->delete();
+            
+            // Hapus komentar pembimbing terkait
+            $this->db->table('komentar_pembimbing')->where('log_id IN (SELECT id FROM log_aktivitas WHERE siswa_id = ' . $id . ')')->delete();
+            
+            // Commit transaction
+            $this->db->transComplete();
+            
+            if ($this->db->transStatus() === false) {
+                return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus siswa. Silakan coba lagi.');
+            }
+            
+            return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil dihapus permanen');
+            
+        } catch (\Exception $e) {
+            // Rollback jika ada error
+            $this->db->transRollback();
+            log_message('error', 'Error hapus siswa: ' . $e->getMessage());
+            return redirect()->to('/admin/kelola-siswa')->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
         }
     }
 
@@ -241,40 +307,76 @@ class Admin extends BaseController
 
     public function simpanPembimbing()
     {
-        $request = service('request');
-        
-        // Validasi input (hanya kolom yang ada di tabel)
-        $rules = [
-            'nama' => 'required|min_length[3]',
-            'username' => 'required|min_length[3]',
-            'password' => 'required|min_length[6]'
-        ];
-        
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-        
-        // Cek apakah username sudah ada di semua tabel
-        if ($this->isUsernameExists($request->getPost('username'))) {
-            return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
-        }
-        
-        // Hash password
-        $password = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
-        
-        $pembimbingData = [
-            'nama' => $request->getPost('nama'),
-            'username' => $request->getPost('username'),
-            'password' => $password,
-            'email' => $request->getPost('email'),
-            'no_hp' => $request->getPost('no_hp'),
-            'status' => 'aktif'
-        ];
-        
-        if ($this->db->table('pembimbing')->insert($pembimbingData)) {
+        try {
+            $request = service('request');
+            
+            // Validasi input (hanya kolom yang ada di tabel)
+            $rules = [
+                'nama' => 'required|min_length[3]',
+                'username' => 'required|min_length[3]',
+                'password' => 'required|min_length[6]'
+            ];
+            
+            if (!$this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+            
+            // Cek apakah username sudah ada di semua tabel
+            if ($this->isUsernameExists($request->getPost('username'))) {
+                return redirect()->back()->withInput()->with('error', 'Username sudah digunakan');
+            }
+            
+            // Hash password
+            $password = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
+            
+            // Mulai transaction
+            $this->db->transStart();
+            
+            // 1. Insert ke tabel users (untuk autentikasi)
+            $userData = [
+                'nama' => $request->getPost('nama'),
+                'username' => $request->getPost('username'),
+                'password' => $password,
+                'role' => 'pembimbing',
+                'status' => 'aktif',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $this->db->table('users')->insert($userData);
+            $userId = $this->db->insertID();
+            
+            // 2. Insert ke tabel pembimbing (untuk data spesifik)
+            $pembimbingData = [
+                'nama' => $request->getPost('nama'),
+                'username' => $request->getPost('username'),
+                'password' => $password,
+                'email' => $request->getPost('email'),
+                'no_hp' => $request->getPost('no_hp'),
+                'alamat' => $request->getPost('alamat'),
+                'instansi' => $request->getPost('instansi'),
+                'jabatan' => $request->getPost('jabatan'),
+                'bidang_keahlian' => $request->getPost('bidang_keahlian'),
+                'status' => 'aktif',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $this->db->table('pembimbing')->insert($pembimbingData);
+            
+            // Commit transaction
+            $this->db->transComplete();
+            
+            if ($this->db->transStatus() === false) {
+                return redirect()->back()->withInput()->with('error', 'Gagal menambahkan pembimbing. Silakan coba lagi.');
+            }
+            
             return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil ditambahkan');
-        } else {
-            return redirect()->back()->withInput()->with('error', 'Gagal menambahkan pembimbing');
+            
+        } catch (\Exception $e) {
+            // Rollback jika ada error
+            $this->db->transRollback();
+            log_message('error', 'Exception in simpanPembimbing: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 
@@ -352,11 +454,52 @@ class Admin extends BaseController
             return redirect()->to('/admin/kelola-pembimbing')->with('error', 'ID pembimbing tidak valid');
         }
         
-        // Soft delete - ubah status menjadi nonaktif
-        if ($this->db->table('pembimbing')->where('id', $id)->update(['status' => 'nonaktif'])) {
-            return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil dihapus');
-        } else {
-            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus pembimbing');
+        try {
+            // Mulai transaction
+            $this->db->transStart();
+            
+            // Ambil data pembimbing untuk mendapatkan username
+            $pembimbing = $this->db->table('pembimbing')->where('id', $id)->get()->getRowArray();
+            if (!$pembimbing) {
+                return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Data pembimbing tidak ditemukan');
+            }
+            
+            $username = $pembimbing['username'];
+            
+            // Hapus foto profil jika ada
+            if ($pembimbing['foto_profil']) {
+                $photoPath = WRITEPATH . 'uploads/profile/' . $pembimbing['foto_profil'];
+                if (file_exists($photoPath)) {
+                    unlink($photoPath);
+                }
+            }
+            
+            // Hapus data dari tabel pembimbing
+            $this->db->table('pembimbing')->where('id', $id)->delete();
+            
+            // Hapus data dari tabel users berdasarkan username
+            $this->db->table('users')->where('username', $username)->delete();
+            
+            // Hapus komentar pembimbing terkait
+            $this->db->table('komentar_pembimbing')->where('pembimbing_id', $id)->delete();
+            
+            // Update siswa yang dibimbing oleh pembimbing ini
+            $this->db->table('siswa')->where('pembimbing_id', $id)->update(['pembimbing_id' => null]);
+            
+            // Commit transaction
+            $this->db->transComplete();
+            
+            if ($this->db->transStatus() === false) {
+                return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus pembimbing. Silakan coba lagi.');
+            }
+            
+            return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil dihapus permanen');
+            
+        } catch (\Exception $e) {
+            // Rollback jika ada error
+            $this->db->transRollback();
+            log_message('error', 'Error hapus pembimbing: ' . $e->getMessage());
+            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
         }
     }
 

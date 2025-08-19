@@ -98,6 +98,51 @@
         .theme-dark .form-control,
         .theme-dark .form-select { background-color: #0b1220; color: var(--text-primary); border-color: #334155; }
         .theme-dark .form-control::placeholder { color: #94a3b8; opacity: 1; }
+
+        /* Auto-hide notification animations */
+        .alert {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .alert.fade {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .alert.fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Progress bar for notifications */
+        .alert {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: currentColor;
+            animation: notification-progress 3s linear forwards;
+        }
+
+        @keyframes notification-progress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* Hover pause animation */
+        .alert:hover::after {
+            animation-play-state: paused;
+        }
         .theme-dark .form-select option { background-color: #0f172a; color: var(--text-primary); }
 
         /* Card and separators */
@@ -1209,6 +1254,71 @@
                     }
                 }
             });
+
+            // Auto-hide notifications after 3 seconds
+            function autoHideNotifications() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    setTimeout(() => {
+                        if (alert && alert.parentNode) {
+                            alert.classList.add('fade');
+                            setTimeout(() => {
+                                if (alert && alert.parentNode) {
+                                    alert.classList.add('fade-out');
+                                    setTimeout(() => {
+                                        if (alert && alert.parentNode) {
+                                            alert.remove();
+                                        }
+                                    }, 300);
+                                }
+                            }, 300);
+                        }
+                    }, 3000);
+                });
+            }
+
+            // Call auto-hide function when page loads
+            autoHideNotifications();
+
+            // Function to show notification with auto-hide
+            window.showNotification = function(message, type = 'success', duration = 3000) {
+                const alertContainer = document.querySelector('.content-wrapper');
+                if (!alertContainer) return;
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.setAttribute('role', 'alert');
+                
+                const icon = type === 'success' ? 'check-circle-fill' : 
+                            type === 'error' ? 'exclamation-triangle-fill' : 
+                            type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
+                
+                alertDiv.innerHTML = `
+                    <i class="bi bi-${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+
+                // Insert at the top of content wrapper
+                alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+
+                // Auto-hide after specified duration
+                setTimeout(() => {
+                    if (alertDiv && alertDiv.parentNode) {
+                        alertDiv.classList.add('fade');
+                        setTimeout(() => {
+                            if (alertDiv && alertDiv.parentNode) {
+                                alertDiv.classList.add('fade-out');
+                                setTimeout(() => {
+                                    if (alertDiv && alertDiv.parentNode) {
+                                        alertDiv.remove();
+                                    }
+                                }, 300);
+                            }
+                        }, 300);
+                    }
+                }, duration);
+            };
 
             // Loading functions
             function showLoading(message = 'Memuat Halaman') {

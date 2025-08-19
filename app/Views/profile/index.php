@@ -227,3 +227,25 @@
 </div>
 
 <?= $this->endSection() ?>
+
+<script>
+// Auto-refresh foto profil setiap 5 detik jika ada parameter refresh
+if (window.location.search.includes('refresh=')) {
+    setInterval(function() {
+        const img = document.querySelector('.img-account-profile');
+        if (img) {
+            const currentSrc = img.src;
+            const newSrc = currentSrc.split('&v=')[0] + '&v=' + Date.now();
+            img.src = newSrc;
+        }
+    }, 5000);
+}
+
+// Refresh foto setelah upload berhasil
+document.getElementById('photoForm').addEventListener('submit', function() {
+    // Tampilkan loading
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...';
+    submitBtn.disabled = true;
+});
+</script>

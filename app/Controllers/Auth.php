@@ -170,34 +170,48 @@ class Auth extends Controller
         
         $passwordHash = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
         
-        $data = [
-            'nama' => $request->getPost('nama'),
-            'username' => $request->getPost('username'),
-            'password' => $passwordHash,
-            'nis' => $request->getPost('nis'),
-            'tempat_magang' => $request->getPost('tempat_magang'),
-            'alamat_magang' => $request->getPost('alamat_magang') ?: $request->getPost('tempat_magang'),
-            'status' => 'aktif'
-        ];
-
         try {
-            // Insert ke tabel users (unified)
+            // Mulai transaction
+            $this->db->transStart();
+            
+            // 1. Insert ke tabel users (untuk autentikasi)
             $userData = [
                 'nama' => $request->getPost('nama'),
                 'username' => $request->getPost('username'),
                 'password' => $passwordHash,
                 'role' => 'siswa',
-                'status' => 'aktif'
+                'status' => 'aktif',
+                'created_at' => date('Y-m-d H:i:s')
             ];
             
             $this->db->table('users')->insert($userData);
-            $userId = $this->db->insertID();
             
-            // Insert ke tabel siswa dengan foreign key
-            $data['user_id'] = $userId;
-            $this->db->table('siswa')->insert($data);
+            // 2. Insert ke tabel siswa (untuk data spesifik)
+            $siswaData = [
+                'nama' => $request->getPost('nama'),
+                'username' => $request->getPost('username'),
+                'password' => $passwordHash,
+                'nis' => $request->getPost('nis'),
+                'tempat_magang' => $request->getPost('tempat_magang'),
+                'alamat_magang' => $request->getPost('alamat_magang') ?: $request->getPost('tempat_magang'),
+                'status' => 'aktif',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $this->db->table('siswa')->insert($siswaData);
+            
+            // Commit transaction
+            $this->db->transComplete();
+            
+            if ($this->db->transStatus() === false) {
+                return redirect()->back()->withInput()->with('error', 'Gagal mendaftar. Silakan coba lagi.');
+            }
             
         } catch (\Throwable $e) {
+            // Rollback jika ada error
+            $this->db->transRollback();
+            log_message('error', 'Error register siswa: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()->withInput()->with('error', 'Gagal mendaftar: ' . $e->getMessage());
         }
 
