@@ -8,7 +8,7 @@
             <i class="bi bi-eye text-primary"></i> Detail Log Aktivitas
         </h1>
         <div class="btn-toolbar mb-2 mb-md-0">
-            <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-outline-secondary">
+            <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-outline-secondary no-loading">
                 <i class="bi bi-arrow-left"></i> Kembali ke Riwayat
             </a>
         </div>
@@ -93,7 +93,7 @@
                                         <td>
                                             <?php if ($log['bukti']): ?>
                                                 <a href="<?= base_url('uploads/bukti/' . $log['bukti']) ?>" 
-                                                   target="_blank" class="btn btn-sm btn-outline-primary">
+                                                   target="_blank" class="btn btn-sm btn-outline-primary no-loading">
                                                     <i class="bi bi-file-earmark"></i> Lihat Bukti
                                                 </a>
                                             <?php else: ?>
@@ -174,17 +174,17 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <?php if ($log['status'] == 'menunggu'): ?>
-                                <a href="<?= base_url('siswa/edit-log/' . $log['id']) ?>" class="btn btn-warning">
+                            <?php if (in_array($log['status'], ['menunggu', 'revisi'])): ?>
+                                <a href="<?= base_url('siswa/edit-log/' . $log['id']) ?>" class="btn btn-warning no-loading">
                                     <i class="bi bi-pencil"></i> Edit Log
                                 </a>
                             <?php endif; ?>
                             
-                            <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-outline-secondary">
+                            <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-outline-secondary no-loading">
                                 <i class="bi bi-arrow-left"></i> Kembali ke Riwayat
                             </a>
                             
-                            <a href="<?= base_url('siswa/input-log') ?>" class="btn btn-primary">
+                            <a href="<?= base_url('siswa/input-log') ?>" class="btn btn-primary no-loading">
                                 <i class="bi bi-plus-circle"></i> Input Log Baru
                             </a>
                         </div>
@@ -229,7 +229,7 @@
                 <i class="bi bi-exclamation-triangle fa-3x text-warning mb-3"></i>
                 <h5 class="text-warning">Log tidak ditemukan</h5>
                 <p class="text-muted">Log aktivitas yang Anda cari tidak ditemukan atau telah dihapus.</p>
-                <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-primary">
+                <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-primary no-loading">
                     <i class="bi bi-arrow-left"></i> Kembali ke Riwayat
                 </a>
             </div>

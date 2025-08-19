@@ -26,6 +26,8 @@ $routes->group('siswa', ['filter' => 'auth:siswa'], function($routes) {
     $routes->get('dashboard', 'Siswa::dashboard');
     $routes->get('input-log', 'Siswa::inputLog');
     $routes->post('save-log', 'Siswa::saveLog');
+    $routes->get('edit-log/(:num)', 'Siswa::editLog/$1');
+    $routes->post('update-log/(:num)', 'Siswa::updateLog/$1');
     $routes->get('riwayat', 'Siswa::riwayat');
     $routes->get('detail-log/(:num)', 'Siswa::detailLog/$1');
     $routes->get('laporan', 'Siswa::laporan');

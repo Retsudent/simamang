@@ -101,7 +101,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <form method="post" action="<?= base_url('admin/generate-laporan-admin') ?>" id="reportForm">
+            <form method="post" action="<?= base_url('admin/generate-laporan-admin') ?>" id="reportForm" class="no-loading">
                 <?= csrf_field() ?>
                 <div class="row g-3 align-items-end">
                     <div class="col-md-4">

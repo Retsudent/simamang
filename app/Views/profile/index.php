@@ -3,10 +3,7 @@
 <?= $this->section('content') ?>
 <div class="container-fluid px-4">
     <h1 class="mt-4">Profil Saya</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="<?= base_url() ?>">Dashboard</a></li>
-        <li class="breadcrumb-item active">Profil</li>
-    </ol>
+    
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -163,15 +160,7 @@
                         </div>
                     </div>
 
-                    <!-- Form actions-->
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#uploadPhotoModal">
-                            Upload Foto Baru
-                        </button>
-                        <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                            Ganti Password
-                        </button>
-                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -182,7 +171,7 @@
 <div class="modal fade" id="uploadPhotoModal" tabindex="-1" aria-labelledby="uploadPhotoModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('profile/update-photo') ?>" method="post" enctype="multipart/form-data">
+            <form action="<?= base_url('profile/update-photo') ?>" method="post" enctype="multipart/form-data" id="photoForm" class="no-loading">
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title" id="uploadPhotoModalLabel">Upload Foto Profil</h5>
@@ -208,7 +197,7 @@
 <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('profile/change-password') ?>" method="post">
+            <form action="<?= base_url('profile/change-password') ?>" method="post" id="passwordForm" class="no-loading">
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title" id="changePasswordModalLabel">Ganti Password</h5>

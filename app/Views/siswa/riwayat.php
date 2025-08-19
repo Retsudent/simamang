@@ -8,7 +8,7 @@
             <i class="bi bi-clock-history text-primary"></i> Riwayat Aktivitas
         </h1>
         <div class="btn-toolbar mb-2 mb-md-0">
-            <a href="<?= base_url('siswa/input-log') ?>" class="btn btn-primary">
+            <a href="<?= base_url('siswa/input-log') ?>" class="btn btn-primary no-loading">
                 <i class="bi bi-plus-circle"></i> Input Log Baru
             </a>
         </div>
@@ -38,7 +38,7 @@
                 <div class="col-md-3">
                     <label class="form-label">&nbsp;</label>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary no-loading">
                             <i class="bi bi-search"></i> Filter
                         </button>
                     </div>
@@ -57,7 +57,7 @@
         <div class="card-body">
             <?php if (!empty($logs)): ?>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover data-table">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -112,7 +112,7 @@
                                     <td>
                                         <?php if ($log['bukti']): ?>
                                             <a href="<?= base_url('uploads/bukti/' . $log['bukti']) ?>" 
-                                               target="_blank" class="btn btn-sm btn-outline-primary">
+                                               target="_blank" class="btn btn-sm btn-outline-primary no-loading">
                                                 <i class="bi bi-file-earmark"></i> Lihat
                                             </a>
                                         <?php else: ?>
@@ -121,7 +121,7 @@
                                     </td>
                                     <td>
                                         <?php if (isset($log['komentar']) && $log['komentar']): ?>
-                                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                            <button type="button" class="btn btn-sm btn-outline-info no-loading" 
                                                     data-bs-toggle="tooltip" data-bs-placement="top" 
                                                     title="<?= $log['komentar'] ?>">
                                                 <i class="bi bi-chat-dots"></i> Ada
@@ -133,12 +133,12 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="<?= base_url('siswa/detail-log/' . $log['id']) ?>" 
-                                               class="btn btn-sm btn-outline-primary">
+                                               class="btn btn-sm btn-outline-primary no-loading">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <?php if ($log['status'] == 'menunggu'): ?>
+                                            <?php if (in_array($log['status'], ['menunggu', 'revisi'])): ?>
                                                 <a href="<?= base_url('siswa/edit-log/' . $log['id']) ?>" 
-                                                   class="btn btn-sm btn-outline-warning">
+                                                   class="btn btn-sm btn-outline-warning no-loading">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                             <?php endif; ?>
@@ -162,7 +162,7 @@
                     <i class="bi bi-journal-x fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted">Belum ada aktivitas</h5>
                     <p class="text-muted">Mulai input log aktivitas magang Anda hari ini!</p>
-                    <a href="<?= base_url('siswa/input-log') ?>" class="btn btn-primary">
+                    <a href="<?= base_url('siswa/input-log') ?>" class="btn btn-primary no-loading">
                         <i class="bi bi-plus-circle"></i> Input Log Pertama
                     </a>
                 </div>

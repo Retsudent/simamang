@@ -266,6 +266,95 @@ class Siswa extends BaseController
         }
     }
 
+    public function editLog($id)
+    {
+        $userId = $this->session->get('user_id');
+        // Ambil siswa by user
+        $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+        if (!$siswa) {
+            return redirect()->to('/siswa/riwayat')->with('error', 'Data siswa tidak ditemukan');
+        }
+        // Ambil log milik siswa
+        $log = $this->db->table('log_aktivitas')->where('id', $id)->get()->getRowArray();
+        if (!$log || (int)$log['siswa_id'] !== (int)$siswa['id']) {
+            return redirect()->to('/siswa/riwayat')->with('error', 'Log tidak ditemukan');
+        }
+        // Izinkan edit bila status menunggu atau revisi
+        if (!in_array($log['status'], ['menunggu', 'revisi'])) {
+            return redirect()->to('/siswa/riwayat')->with('error', 'Log yang sudah disetujui tidak dapat diedit');
+        }
+        return view('siswa/edit_log', [
+            'title' => 'Edit Log Aktivitas - SIMAMANG',
+            'log' => $log
+        ]);
+    }
+
+    public function updateLog($id)
+    {
+        try {
+            $request = service('request');
+            $userId = $this->session->get('user_id');
+            $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+            if (!$siswa) {
+                return redirect()->to('/siswa/riwayat')->with('error', 'Data siswa tidak ditemukan');
+            }
+            $log = $this->db->table('log_aktivitas')->where('id', $id)->get()->getRowArray();
+            if (!$log || (int)$log['siswa_id'] !== (int)$siswa['id']) {
+                return redirect()->to('/siswa/riwayat')->with('error', 'Log tidak ditemukan');
+            }
+            if (!in_array($log['status'], ['menunggu', 'revisi'])) {
+                return redirect()->to('/siswa/riwayat')->with('error', 'Log yang sudah disetujui tidak dapat diedit');
+            }
+
+            // Validasi
+            $rules = [
+                'tanggal' => 'required|valid_date',
+                'jam_mulai' => 'required',
+                'jam_selesai' => 'required',
+                'uraian' => 'required|min_length[10]'
+            ];
+            if (!$this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+            // Handle optional bukti update
+            $bukti = $log['bukti'];
+            $file = $request->getFile('bukti');
+            if ($file && $file->isValid() && !$file->hasMoved()) {
+                if ($file->getSize() > 2 * 1024 * 1024) {
+                    return redirect()->back()->withInput()->with('error', 'Ukuran file terlalu besar. Maksimal 2MB.');
+                }
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                if (!in_array($file->getMimeType(), $allowedTypes)) {
+                    return redirect()->back()->withInput()->with('error', 'Tipe file tidak diizinkan.');
+                }
+                $uploadDir = WRITEPATH . 'uploads/bukti';
+                if (!is_dir($uploadDir)) { @mkdir($uploadDir, 0775, true); }
+                $originalName = $file->getName();
+                $timestamp = date('Y-m-d_H-i-s');
+                $newName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $timestamp . '_' . $originalName);
+                $file->move($uploadDir, $newName);
+                $bukti = $newName;
+            }
+
+            $update = [
+                'tanggal' => $request->getPost('tanggal'),
+                'jam_mulai' => $request->getPost('jam_mulai'),
+                'jam_selesai' => $request->getPost('jam_selesai'),
+                'uraian' => $request->getPost('uraian'),
+                'bukti' => $bukti,
+                // Reset status ke menunggu saat edit jika sebelumnya revisi
+                'status' => 'menunggu',
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            $this->db->table('log_aktivitas')->where('id', $id)->update($update);
+            return redirect()->to('/siswa/riwayat')->with('success', 'Log berhasil diperbarui dan dikirim ulang');
+        } catch (\Exception $e) {
+            log_message('error', 'Error update log: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan saat memperbarui log');
+        }
+    }
+
     public function laporan()
     {
         $data = [

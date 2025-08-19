@@ -29,7 +29,7 @@
                         </div>
                     <?php endif; ?>
 
-                    <form action="<?= base_url('siswa/save-log') ?>" method="post" enctype="multipart/form-data">
+                    <form action="<?= base_url('siswa/save-log') ?>" method="post" enctype="multipart/form-data" id="logForm" class="no-loading">
                         <?= csrf_field() ?>
                         
                         <!-- Date and Time Section -->

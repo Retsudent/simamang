@@ -29,7 +29,7 @@
                         </div>
                     <?php endif; ?>
 
-                    <form method="post" action="<?= base_url('siswa/generate-laporan') ?>">
+                    <form method="post" action="<?= base_url('siswa/generate-laporan') ?>" id="laporanForm" class="no-loading">
                         <?= csrf_field() ?>
                         
                         <div class="row">

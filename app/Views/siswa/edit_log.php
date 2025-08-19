@@ -1,6 +1,98 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">Edit Log Aktivitas</h2>
+                <p class="text-muted mb-0">Perbaiki log berdasarkan catatan revisi dari pembimbing</p>
+            </div>
+            <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-outline-secondary no-loading">
+                <i class="bi bi-arrow-left me-2"></i>Kembali ke Riwayat
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-pencil-square"></i>
+                    Form Edit Log
+                </div>
+                <div class="card-body">
+                    <form action="<?= base_url('siswa/update-log/' . $log['id']) ?>" method="post" enctype="multipart/form-data" class="no-loading" id="editLogForm">
+                        <?= csrf_field() ?>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= esc($log['tanggal']) ?>" required>
+                                    <label for="tanggal"><i class="bi bi-calendar me-2"></i>Tanggal</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input type="time" class="form-control" name="jam_mulai" id="jam_mulai" value="<?= esc($log['jam_mulai']) ?>" required>
+                                    <label for="jam_mulai"><i class="bi bi-clock me-2"></i>Mulai</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input type="time" class="form-control" name="jam_selesai" id="jam_selesai" value="<?= esc($log['jam_selesai']) ?>" required>
+                                    <label for="jam_selesai"><i class="bi bi-clock-fill me-2"></i>Selesai</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <textarea class="form-control" style="height: 160px" name="uraian" id="uraian" required><?= esc($log['uraian']) ?></textarea>
+                                <label for="uraian"><i class="bi bi-text-paragraph me-2"></i>Uraian Aktivitas</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label"><i class="bi bi-paperclip me-2"></i>Bukti (opsional)</label>
+                            <?php if (!empty($log['bukti'])): ?>
+                                <div class="mb-2">
+                                    <a href="<?= base_url('uploads/bukti/' . $log['bukti']) ?>" target="_blank" class="btn btn-sm btn-outline-primary no-loading">
+                                        <i class="bi bi-file-earmark"></i> Lihat Bukti Sekarang
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <input type="file" class="form-control" name="bukti" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            <div class="form-text">Unggah file baru untuk mengganti bukti. Biarkan kosong jika tidak diganti.</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>Simpan Perubahan
+                            </button>
+                            <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-outline-secondary no-loading">Batal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('editLogForm').addEventListener('submit', function(e){
+    const uraian = document.getElementById('uraian').value.trim();
+    if (uraian.length < 10) {
+        e.preventDefault();
+        alert('Uraian minimal 10 karakter.');
+    }
+});
+</script>
+<?= $this->endSection() ?>
+
+<?= $this->extend('layouts/main') ?>
+
+<?= $this->section('content') ?>
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-lg-8">
