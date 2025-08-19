@@ -180,19 +180,20 @@ class Profile extends BaseController
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
             
-            // Update database di tabel role-specific juga
+            // Update database di tabel role-specific juga berdasarkan username
+            $username = $this->session->get('username');
             if ($userRole === 'siswa') {
-                $this->db->table('siswa')->where('user_id', $userId)->update([
+                $this->db->table('siswa')->where('username', $username)->update([
                     'foto_profil' => $newName,
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
             } elseif ($userRole === 'pembimbing') {
-                $this->db->table('pembimbing')->where('user_id', $userId)->update([
+                $this->db->table('pembimbing')->where('username', $username)->update([
                     'foto_profil' => $newName,
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
             } elseif ($userRole === 'admin') {
-                $this->db->table('admin')->where('user_id', $userId)->update([
+                $this->db->table('admin')->where('username', $username)->update([
                     'foto_profil' => $newName,
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);

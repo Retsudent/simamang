@@ -1280,6 +1280,28 @@
             // Call auto-hide function when page loads
             autoHideNotifications();
 
+            // Auto-refresh profile photos every 10 seconds
+            function refreshProfilePhotos() {
+                const profileImages = document.querySelectorAll('img[src*="photo.php"], img[src*="default-avatar"]');
+                profileImages.forEach(img => {
+                    if (img.src.includes('photo.php')) {
+                        // Add timestamp to force refresh
+                        const separator = img.src.includes('?') ? '&' : '?';
+                        img.src = img.src + separator + 'v=' + Date.now();
+                    }
+                });
+            }
+
+            // Refresh profile photos every 10 seconds
+            setInterval(refreshProfilePhotos, 10000);
+
+            // Also refresh when page becomes visible
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    refreshProfilePhotos();
+                }
+            });
+
             // Function to show notification with auto-hide
             window.showNotification = function(message, type = 'success', duration = 3000) {
                 const alertContainer = document.querySelector('.content-wrapper');

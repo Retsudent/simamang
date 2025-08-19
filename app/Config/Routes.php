@@ -56,6 +56,7 @@ $routes->group('profile', ['filter' => 'auth'], function($routes) {
     $routes->get('/', 'Profile::index');
     $routes->post('update-photo', 'Profile::updatePhoto');
     $routes->post('change-password', 'Profile::changePassword');
+    $routes->get('refresh-photo', 'Profile::refreshPhoto');
 });
 
 
