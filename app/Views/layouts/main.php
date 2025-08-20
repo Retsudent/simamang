@@ -40,6 +40,120 @@
             font-weight: 400;
         }
 
+        /* Dark Theme */
+        .theme-dark {
+            --background-light: #0b1220;
+            --background-white: #0f172a;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+            --border-light: #0b1220;
+        }
+
+        .theme-dark .top-nav,
+        .theme-dark .card,
+        .theme-dark .quick-actions,
+        .theme-dark .recent-activity,
+        .theme-dark .content-wrapper {
+            background: var(--background-white);
+            color: var(--text-primary);
+        }
+
+        .theme-dark .nav-link { color: rgba(255,255,255,0.85); }
+        .theme-dark .nav-link:hover { background-color: rgba(255,255,255,0.08); }
+        .theme-dark .nav-link.active { box-shadow: none; }
+        .theme-dark .user-menu { background: linear-gradient(135deg, var(--background-white) 0%, #0b1220 100%); border-color: var(--border-color); }
+        .theme-dark .page-title { color: var(--text-primary); }
+
+        /* Improve contrast for muted/secondary texts and UI in dark mode */
+        .theme-dark .text-muted,
+        .theme-dark small,
+        .theme-dark .form-text { color: #a8b3c7 !important; }
+        .theme-dark .text-secondary { color: var(--text-secondary) !important; }
+
+        /* Profile page and plaintext fields */
+        .theme-dark .form-control-plaintext { color: var(--text-primary) !important; }
+        .theme-dark .card .form-label { color: var(--text-secondary); }
+        .theme-dark h1, .theme-dark h5, .theme-dark h6 { color: var(--text-primary); }
+
+        /* Breadcrumbs */
+        .theme-dark .breadcrumb { background: transparent; }
+        .theme-dark .breadcrumb .breadcrumb-item,
+        .theme-dark .breadcrumb a { color: #b6c3d8; }
+        .theme-dark .breadcrumb .breadcrumb-item.active { color: var(--text-secondary); }
+
+        .theme-dark .dropdown-menu { background-color: #0f172a; border-color: #1e293b; color: var(--text-primary); z-index: 1100; }
+        .theme-dark .dropdown-item { color: var(--text-primary); }
+        .theme-dark .dropdown-item:hover { background-color: #1e293b; color: var(--text-primary); }
+
+        .theme-dark .table { color: var(--text-primary); }
+        .theme-dark .table thead th { border-color: #1e293b; color: #cbd5e1; }
+        .theme-dark .table tbody td { border-color: #1e293b; }
+        .theme-dark .table-hover tbody tr:hover { background-color: rgba(148,163,184,0.08); }
+
+        .theme-dark .badge.bg-secondary { background-color: #334155 !important; color: #e2e8f0 !important; }
+        .theme-dark .badge.bg-warning { color: #111827 !important; }
+
+        .theme-dark .form-control,
+        .theme-dark .form-select { background-color: #0b1220; color: var(--text-primary); border-color: #334155; }
+        .theme-dark .form-control::placeholder { color: #94a3b8; opacity: 1; }
+
+        /* Auto-hide notification animations */
+        .alert {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .alert.fade {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .alert.fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Progress bar for notifications */
+        .alert {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: currentColor;
+            animation: notification-progress 3s linear forwards;
+        }
+
+        @keyframes notification-progress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* Hover pause animation */
+        .alert:hover::after {
+            animation-play-state: paused;
+        }
+        .theme-dark .form-select option { background-color: #0f172a; color: var(--text-primary); }
+
+        /* Card and separators */
+        .theme-dark .card { border-color: #1e293b; }
+        .theme-dark hr { border-color: #1e293b; opacity: 1; }
+
+        .theme-dark .btn-outline-secondary { color: #cbd5e1; border-color: #334155; }
+        .theme-dark .btn-outline-secondary:hover { background-color: #334155; color: #e2e8f0; }
+
+        .theme-dark .data-table-filter input { background-color: #0b1220; color: var(--text-primary); border-color: #334155; }
+
         /* Sidebar */
         .sidebar {
             position: fixed;
@@ -235,12 +349,20 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 1030;
         }
 
         .top-nav-left {
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+
+        .top-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .page-title {
@@ -668,6 +790,12 @@
             overflow: hidden;
         }
 
+        /* Data Table - lightweight enhancements */
+        .data-table thead th { cursor: pointer; user-select: none; }
+        .data-table thead th.sort-asc::after { content: ' \2191'; }
+        .data-table thead th.sort-desc::after { content: ' \2193'; }
+        .data-table-filter { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+
         .card:hover {
             box-shadow: var(--shadow-md);
             transform: translateY(-2px);
@@ -886,6 +1014,97 @@
             }
         }
 
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border-light);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .loading-text {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Pulse animation for loading dots */
+        .loading-dots {
+            display: inline-flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 576px) {
             .sidebar {
                 width: 75%;
@@ -903,13 +1122,48 @@
             .top-nav-left {
                 gap: 0.5rem;
             }
+
+            .loading-container {
+                padding: 1.5rem;
+                max-width: 280px;
+            }
+
+            .loading-spinner {
+                width: 50px;
+                height: 50px;
+            }
+
+            .loading-text {
+                font-size: 0.9rem;
+            }
+
+            .loading-subtext {
+                font-size: 0.8rem;
+            }
         }
     </style>
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Memuat Halaman</div>
+            <div class="loading-subtext">Mohon tunggu sebentar</div>
+            <div class="loading-dots">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <!-- Toast Container -->
+    <div id="toastContainer" class="position-fixed p-3" style="z-index: 11000; right: 0; top: 0; max-width: 380px;"></div>
 
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
@@ -1033,6 +1287,9 @@
                         </a></li>
                     </ul>
                 </div>
+                <button id="themeToggle" class="btn btn-light border" title="Toggle theme" style="width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
             </div>
         </div>
 
@@ -1069,11 +1326,274 @@
     <!-- Sidebar Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Theme init
+            const root = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                root.classList.add('theme-dark');
+                if (themeToggle) themeToggle.innerHTML = '<i class="bi bi-sun"></i>';
+            }
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    root.classList.toggle('theme-dark');
+                    const isDark = root.classList.contains('theme-dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    themeToggle.innerHTML = isDark ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
+                });
+            }
+
+            // Toast helper
+            const toastContainer = document.getElementById('toastContainer');
+            window.showToast = function(message, type = 'success') {
+                const id = 't' + Date.now();
+                const icon = type === 'success' ? 'check-circle' : (type === 'warning' ? 'exclamation-triangle' : 'x-circle');
+                const bg = type === 'success' ? 'bg-success' : (type === 'warning' ? 'bg-warning' : 'bg-danger');
+                const text = type === 'warning' ? 'text-dark' : 'text-white';
+                const el = document.createElement('div');
+                el.className = `toast align-items-center ${bg} ${text} border-0 show mb-2`;
+                el.id = id;
+                el.setAttribute('role', 'alert');
+                el.innerHTML = `<div class="d-flex">
+                    <div class="toast-body"><i class="bi bi-${icon} me-2"></i>${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>`;
+                toastContainer.appendChild(el);
+                setTimeout(() => { el.remove(); }, 4000);
+            }
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.querySelector('.main-content');
             const mobileOverlay = document.getElementById('mobileOverlay');
             const mobileCloseBtn = document.getElementById('mobileCloseBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            // Inline validation helper (basic)
+            document.body.addEventListener('input', function(e) {
+                const input = e.target.closest('input, textarea, select');
+                if (!input) return;
+                if (input.hasAttribute('required')) {
+                    if (input.value && input.checkValidity()) {
+                        input.classList.remove('is-invalid');
+                        input.classList.add('is-valid');
+                    } else {
+                        input.classList.remove('is-valid');
+                    }
+                }
+            });
+
+            // Auto-hide notifications after 3 seconds
+            function autoHideNotifications() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    setTimeout(() => {
+                        if (alert && alert.parentNode) {
+                            alert.classList.add('fade');
+                            setTimeout(() => {
+                                if (alert && alert.parentNode) {
+                                    alert.classList.add('fade-out');
+                                    setTimeout(() => {
+                                        if (alert && alert.parentNode) {
+                                            alert.remove();
+                                        }
+                                    }, 300);
+                                }
+                            }, 300);
+                        }
+                    }, 3000);
+                });
+            }
+
+            // Call auto-hide function when page loads
+            autoHideNotifications();
+
+            // Auto-refresh profile photos every 10 seconds
+            function refreshProfilePhotos() {
+                const profileImages = document.querySelectorAll('img[src*="photo.php"], img[src*="default-avatar"]');
+                profileImages.forEach(img => {
+                    if (img.src.includes('photo.php')) {
+                        // Add timestamp to force refresh
+                        const separator = img.src.includes('?') ? '&' : '?';
+                        img.src = img.src + separator + 'v=' + Date.now();
+                    }
+                });
+            }
+
+            // Refresh profile photos every 10 seconds
+            setInterval(refreshProfilePhotos, 10000);
+
+            // Also refresh when page becomes visible
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    refreshProfilePhotos();
+                }
+            });
+
+            // Function to show notification with auto-hide
+            window.showNotification = function(message, type = 'success', duration = 3000) {
+                const alertContainer = document.querySelector('.content-wrapper');
+                if (!alertContainer) return;
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.setAttribute('role', 'alert');
+                
+                const icon = type === 'success' ? 'check-circle-fill' : 
+                            type === 'error' ? 'exclamation-triangle-fill' : 
+                            type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
+                
+                alertDiv.innerHTML = `
+                    <i class="bi bi-${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+
+                // Insert at the top of content wrapper
+                alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+
+                // Auto-hide after specified duration
+                setTimeout(() => {
+                    if (alertDiv && alertDiv.parentNode) {
+                        alertDiv.classList.add('fade');
+                        setTimeout(() => {
+                            if (alertDiv && alertDiv.parentNode) {
+                                alertDiv.classList.add('fade-out');
+                                setTimeout(() => {
+                                    if (alertDiv && alertDiv.parentNode) {
+                                        alertDiv.remove();
+                                    }
+                                }, 300);
+                            }
+                        }, 300);
+                    }
+                }, duration);
+            };
+
+            // Loading functions
+            function showLoading(message = 'Memuat Halaman') {
+                const loadingText = loadingOverlay.querySelector('.loading-text');
+                loadingText.textContent = message;
+                loadingOverlay.classList.add('active');
+            }
+
+            function hideLoading() {
+                loadingOverlay.classList.remove('active');
+            }
+
+            // Show loading on page load
+            showLoading('Memuat Halaman');
+            
+            // Hide loading when page is fully loaded
+            window.addEventListener('load', function() {
+                setTimeout(hideLoading, 500); // Small delay for smooth transition
+            });
+
+            // Show loading on navigation (but exclude specific forms)
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('a');
+                if (target && target.href && !target.href.includes('javascript:') && !target.href.includes('#')) {
+                    // Don't show loading for logout or specific actions
+                    if (!target.href.includes('logout') && 
+                        !target.href.includes('photo.php') && 
+                        !target.href.includes('generate-pdf') &&
+                        !target.href.includes('save-log') &&
+                        !target.href.includes('update-photo') &&
+                        !target.href.includes('change-password')) {
+                        showLoading('Memuat Halaman');
+                    }
+                }
+            });
+
+            // Don't show loading for form submissions (to avoid interfering with file uploads, log input, etc.)
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                // Don't show loading for specific forms that need to work without interruption
+                if (form.id === 'photoForm' || 
+                    form.id === 'logForm' || 
+                    form.id === 'laporanForm' ||
+                    form.id === 'reportForm' ||
+                    form.id === 'passwordForm' ||
+                    form.classList.contains('no-loading')) {
+                    return;
+                }
+                showLoading('Memproses Data');
+            });
+
+            // Show loading for quick report buttons (but not for form submissions)
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('a');
+                if (target && target.href) {
+                    // Show loading for quick report generation
+                    if (target.href.includes('generate-laporan-rapid') || 
+                        target.href.includes('generate-pdf')) {
+                        showLoading('Membuat Laporan PDF');
+                    }
+                }
+
+                // Don't show loading for modal triggers
+                if (target && target.getAttribute('data-bs-toggle') === 'modal') {
+                    return;
+                }
+            });
+
+            // Data Table: basic sort + filter + export CSV
+            function initDataTables() {
+                document.querySelectorAll('table.data-table').forEach(function(table) {
+                    // Inject filter bar
+                    const wrapper = table.closest('.table-responsive') || table.parentElement;
+                    const bar = document.createElement('div');
+                    bar.className = 'data-table-filter';
+                    bar.innerHTML = '<input type="text" class="form-control form-control-sm" placeholder="Cari..." style="max-width:220px;">\n<button class="btn btn-sm btn-outline-secondary export-csv"><i class="bi bi-download"></i> CSV</button>';
+                    wrapper.parentNode.insertBefore(bar, wrapper);
+
+                    // Search filter
+                    const input = bar.querySelector('input');
+                    input.addEventListener('input', function() {
+                        const q = this.value.toLowerCase();
+                        Array.from(table.tBodies[0].rows).forEach(function(row) {
+                            const text = row.innerText.toLowerCase();
+                            row.style.display = text.includes(q) ? '' : 'none';
+                        });
+                    });
+
+                    // Sorting
+                    Array.from(table.tHead.rows[0].cells).forEach(function(th, idx) {
+                        th.addEventListener('click', function() {
+                            const rows = Array.from(table.tBodies[0].rows);
+                            const current = th.classList.contains('sort-asc') ? 'asc' : th.classList.contains('sort-desc') ? 'desc' : null;
+                            Array.from(table.tHead.rows[0].cells).forEach(c => c.classList.remove('sort-asc','sort-desc'));
+                            const newDir = current === 'asc' ? 'desc' : 'asc';
+                            th.classList.add(newDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                            rows.sort(function(a,b){
+                                const ta = (a.cells[idx]?.innerText || '').trim().toLowerCase();
+                                const tb = (b.cells[idx]?.innerText || '').trim().toLowerCase();
+                                if (!isNaN(ta) && !isNaN(tb)) { return (newDir==='asc'?1:-1) * (parseFloat(ta)-parseFloat(tb)); }
+                                return (newDir==='asc'?1:-1) * ta.localeCompare(tb);
+                            });
+                            rows.forEach(r => table.tBodies[0].appendChild(r));
+                        });
+                    });
+
+                    // Export CSV
+                    bar.querySelector('.export-csv').addEventListener('click', function() {
+                        const rows = [];
+                        const trs = table.querySelectorAll('tr');
+                        trs.forEach(tr => {
+                            const cells = Array.from(tr.querySelectorAll('th,td')).map(td => '"' + (td.innerText||'').replace(/"/g,'""') + '"');
+                            rows.push(cells.join(','));
+                        });
+                        const blob = new Blob([rows.join('\n')], {type: 'text/csv;charset=utf-8;'});
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url; a.download = 'data.csv'; a.click();
+                        URL.revokeObjectURL(url);
+                        showToast && showToast('Berhasil ekspor CSV','success');
+                    });
+                });
+            }
+
+            initDataTables();
             
             // Check if sidebar state is saved in localStorage
             const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';

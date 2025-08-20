@@ -1,47 +1,56 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">
-            <i class="bi bi-gear text-primary me-2"></i>
-            Atur Siswa untuk <?= esc($pembimbing['nama']) ?>
-        </h4>
-        <a href="<?= base_url('admin/atur-bimbingan') ?>" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Kembali
-        </a>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold text-primary mb-1">
+                        <i class="fas fa-users-cog me-3"></i>
+                        Atur Siswa untuk Pembimbing: <?= esc($pembimbing['nama']) ?>
+                    </h2>
+                    <p class="text-muted mb-0">Kelola dan atur siswa yang akan dibimbing oleh pembimbing ini</p>
+                </div>
+                <a href="<?= base_url('admin/atur-bimbingan') ?>" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>Kembali ke Daftar
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Informasi Pembimbing -->
-    <div class="card mb-4">
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-primary text-white py-3">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-user-tie me-3"></i>
+                <h5 class="mb-0 fw-bold">Informasi Pembimbing</h5>
+            </div>
+        </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-3">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-lg bg-primary-light rounded-circle d-flex align-items-center justify-content-center me-3">
-                            <i class="bi bi-person text-primary" style="font-size: 2rem;"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-1"><?= esc($pembimbing['nama']) ?></h5>
-                            <p class="text-muted mb-0"><?= esc($pembimbing['jabatan'] ?? 'Pembimbing') ?></p>
-                        </div>
+                    <div class="text-center">
+                        <h5 class="fw-bold mb-1"><?= esc($pembimbing['nama']) ?></h5>
+                        <p class="text-muted mb-0"><?= esc($pembimbing['jabatan'] ?? 'Belum ditentukan') ?></p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center">
-                        <h4 class="mb-1"><?= count($assignedIds) ?></h4>
-                        <p class="text-muted mb-0">Siswa Terbimbing</p>
+                        <h4 class="mb-1 text-success"><?= count($assignedIds) ?></h4>
+                        <p class="text-muted mb-0">Jumlah Siswa Terbimbing</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center">
-                        <h4 class="mb-1"><?= esc($pembimbing['username']) ?></h4>
+                        <h4 class="mb-1 text-info"><?= esc($pembimbing['username']) ?></h4>
                         <p class="text-muted mb-0">Username</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center">
-                        <h4 class="mb-1"><?= esc($pembimbing['instansi'] ?? '-') ?></h4>
+                        <h4 class="mb-1 text-warning"><?= esc($pembimbing['instansi'] ?? 'Belum diisi') ?></h4>
                         <p class="text-muted mb-0">Instansi</p>
                     </div>
                 </div>
@@ -50,66 +59,65 @@
     </div>
 
     <!-- Form Pengaturan Siswa -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="bi bi-list-check me-2"></i>
-                Pilih Siswa untuk Dibimbing
-            </h5>
+    <div class="card border-0 shadow">
+        <div class="card-header bg-success text-white py-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-list-check me-3"></i>
+                <h5 class="mb-0 fw-bold">Pilih Siswa yang Akan Dibimbing</h5>
+            </div>
         </div>
         <div class="card-body">
             <form method="post" action="<?= base_url('admin/simpan-atur-bimbingan/' . $pembimbing['id']) ?>">
                 <?= csrf_field() ?>
                 
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Petunjuk:</strong> Centang siswa yang akan dibimbing oleh pembimbing ini.
+                </div>
+                
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 50px;">
-                                    <input type="checkbox" id="selectAllCheckbox" class="form-check-input">
+                                <th style="width: 50px;" class="text-center">
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input type="checkbox" id="selectAllCheckbox" class="form-check-input">
+                                        <label for="selectAllCheckbox" class="ms-2">Pilih Semua</label>
+                                    </div>
                                 </th>
                                 <th>Nama Siswa</th>
+                                <th>Username</th>
                                 <th>NIS</th>
                                 <th>Tempat Magang</th>
-                                <th>Status Saat Ini</th>
+                                <th class="text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($semuaSiswa as $s): ?>
                                 <tr>
-                                    <td>
-                                        <input type="checkbox" name="siswa_ids[]" value="<?= $s['id'] ?>" 
-                                               class="form-check-input siswa-checkbox"
-                                               <?= in_array($s['id'], $assignedIds, true) ? 'checked' : '' ?>>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm bg-success-light rounded-circle d-flex align-items-center justify-content-center me-3">
-                                                <i class="bi bi-mortarboard text-success"></i>
-                                            </div>
-                                            <div>
-                                                <strong><?= esc($s['nama']) ?></strong>
-                                                <br><small class="text-muted"><?= esc($s['username']) ?></small>
-                                            </div>
+                                    <td class="text-center">
+                                        <div class="form-check d-flex justify-content-center">
+                                            <input type="checkbox" name="siswa_ids[]" value="<?= $s['id'] ?>" 
+                                                   class="form-check-input siswa-checkbox"
+                                                   <?= in_array($s['id'], $assignedIds, true) ? 'checked' : '' ?>>
                                         </div>
                                     </td>
-                                    <td><code><?= esc($s['nis']) ?></code></td>
-                                    <td><?= esc($s['tempat_magang']) ?></td>
                                     <td>
+                                        <strong><?= esc($s['nama']) ?></strong>
+                                    </td>
+                                    <td>
+                                        <code><?= esc($s['username']) ?></code>
+                                    </td>
+                                    <td><?= esc($s['nis']) ?></td>
+                                    <td><?= esc($s['tempat_magang']) ?></td>
+                                    <td class="text-center">
                                         <?php if (in_array($s['id'], $assignedIds, true)): ?>
                                             <span class="badge bg-success">
-                                                <i class="bi bi-person-check me-1"></i>
-                                                Terbimbing oleh <?= esc($pembimbing['nama']) ?>
-                                            </span>
-                                        <?php elseif ($s['pembimbing_id']): ?>
-                                            <span class="badge bg-warning">
-                                                <i class="bi bi-person-x me-1"></i>
-                                                Terbimbing oleh pembimbing lain
+                                                Sudah Terbimbing
                                             </span>
                                         <?php else: ?>
                                             <span class="badge bg-secondary">
-                                                <i class="bi bi-person-x me-1"></i>
-                                                Belum ada pembimbing
+                                                Belum Ada Pembimbing
                                             </span>
                                         <?php endif; ?>
                                     </td>
@@ -119,12 +127,12 @@
                     </table>
                 </div>
 
-                <div class="mt-4 d-flex justify-content-end">
-                    <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
-                        <i class="bi bi-x-circle me-1"></i>Batal
+                <div class="mt-4 d-flex justify-content-end gap-3">
+                    <button type="button" class="btn btn-light btn-lg px-4" onclick="history.back()">
+                        <i class="bi bi-x-circle me-2"></i>Batal
                     </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>Simpan Perubahan
+                    <button type="submit" class="btn btn-success btn-lg px-4">
+                        <i class="bi bi-check-circle me-2"></i>Simpan Pengaturan
                     </button>
                 </div>
             </form>
@@ -133,19 +141,18 @@
 </div>
 
 <style>
-.avatar-sm {
-    width: 40px;
-    height: 40px;
+.card {
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
-.avatar-lg {
-    width: 80px;
-    height: 80px;
+
+.shadow {
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075) !important;
 }
-.bg-primary-light {
-    background-color: rgba(13, 110, 253, 0.1);
-}
-.bg-success-light {
-    background-color: rgba(25, 135, 84, 0.1);
+
+.btn-lg {
+    border-radius: 0.5rem;
+    font-weight: 600;
 }
 </style>
 

@@ -175,8 +175,10 @@ class Profile extends BaseController
                 }
             }
             
-            // Generate nama file unik
-            $newName = $file->getRandomName();
+            // Generate nama file unik dengan timestamp
+            $extension = $file->getExtension();
+            $timestamp = time();
+            $newName = $timestamp . '_' . $file->getRandomName();
             
             // Pindahkan file ke folder uploads/profile
             $uploadPath = WRITEPATH . 'uploads/profile/';
@@ -200,11 +202,30 @@ class Profile extends BaseController
                 $this->db->table('admin')->where('user_id', $userId)->update(['foto_profil' => $newName]);
             }
             
+            // Update database di tabel role-specific juga berdasarkan username
+            $username = $this->session->get('username');
+            if ($userRole === 'siswa') {
+                $this->db->table('siswa')->where('username', $username)->update([
+                    'foto_profil' => $newName,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            } elseif ($userRole === 'pembimbing') {
+                $this->db->table('pembimbing')->where('username', $username)->update([
+                    'foto_profil' => $newName,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            } elseif ($userRole === 'admin') {
+                $this->db->table('admin')->where('username', $username)->update([
+                    'foto_profil' => $newName,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+            
             // Update session foto_profil
             $this->session->set('foto_profil', $newName);
             
             // Clear cache dan redirect dengan parameter untuk memaksa refresh
-            return redirect()->to('/profile?refresh=' . time())->with('success', 'Foto profil berhasil diperbarui');
+            return redirect()->to('/profile?refresh=' . $timestamp)->with('success', 'Foto profil berhasil diperbarui');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
         }

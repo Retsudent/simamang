@@ -4,8 +4,8 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Edit Profil</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="<?= base_url() ?>">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="<?= base_url('profile') ?>">Profil</a></li>
+        <li class="breadcrumb-item"><a href="<?= base_url() ?>" class="no-loading">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="<?= base_url('profile') ?>" class="no-loading">Profil</a></li>
         <li class="breadcrumb-item active">Edit</li>
     </ol>
 
@@ -21,7 +21,7 @@
             <div class="card mb-4">
                 <div class="card-header">Edit Informasi Profil</div>
                 <div class="card-body">
-                    <form action="<?= base_url('profile/update') ?>" method="post">
+                    <form action="<?= base_url('profile/update') ?>" method="post" class="profile-form no-loading">
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="small mb-1" for="nama">Nama Lengkap <span class="text-danger">*</span></label>
