@@ -181,11 +181,11 @@
         .top-nav-right {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+                gap: 0.75rem;
         }
 
         .page-title {
-            font-size: 1.5rem;
+                font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-primary);
             margin: 0;
@@ -219,7 +219,7 @@
                 justify-content: center;
             color: white;
             font-weight: 600;
-            font-size: 1.1rem;
+                font-size: 1.1rem;
             border: 2px solid var(--background-white);
             box-shadow: var(--shadow-sm);
         }
@@ -351,22 +351,22 @@
             }
             
             .welcome-subtitle {
-            font-size: 1rem;
+                font-size: 1rem;
             opacity: 0.9;
             margin-bottom: 1rem;
-        }
-
-        .welcome-info {
+            }
+            
+            .welcome-info {
             display: flex;
             gap: 2rem;
             flex-wrap: wrap;
-        }
-
-        .welcome-item {
+            }
+            
+            .welcome-item {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.9rem;
+                font-size: 0.9rem;
             opacity: 0.8;
         }
 
@@ -406,22 +406,22 @@
             .stat-card:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-        }
-
-        .stat-header {
+            }
+            
+            .stat-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 1rem;
-        }
-
-        .stat-icon {
+            }
+            
+            .stat-icon {
             width: 3rem;
             height: 3rem;
             border-radius: 0.75rem;
             display: flex;
             align-items: center;
-            justify-content: center;
+                justify-content: center;
             font-size: 1.5rem;
             color: white;
         }
@@ -460,7 +460,7 @@
         }
 
         .stat-change {
-            font-size: 0.8rem;
+                font-size: 0.8rem;
             color: var(--accent-color);
             font-weight: 600;
         }
@@ -478,7 +478,7 @@
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 1rem;
+                margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -587,9 +587,9 @@
         .activity-title {
             font-weight: 500;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
+                margin-bottom: 0.25rem;
+            }
+            
         .activity-time {
                 font-size: 0.8rem;
             color: var(--text-secondary);
@@ -634,9 +634,9 @@
         .card-header i {
             color: var(--primary-color);
             font-size: 1.25rem;
-        }
-
-        .card-body {
+            }
+            
+            .card-body {
             padding: 1.5rem;
         }
 
@@ -724,7 +724,7 @@
         }
 
         /* Alerts */
-        .alert {
+            .alert {
             border: none;
             border-radius: 0.75rem;
             padding: 1rem 1.5rem;
