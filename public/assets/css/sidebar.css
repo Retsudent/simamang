@@ -1,0 +1,352 @@
+/* Sidebar Styles for SIMAMANG - Works on all devices */
+
+/* Sidebar Container */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Sidebar States */
+.sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+.sidebar.mobile-open {
+    transform: translateX(0);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    position: relative;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding-right: 3rem;
+    transition: all 0.3s ease;
+}
+
+.sidebar-brand:hover {
+    color: var(--accent-light);
+    text-decoration: none;
+}
+
+.sidebar-brand i {
+    font-size: 2rem;
+    color: var(--accent-light);
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    padding: 1rem 0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    gap: 0.75rem;
+    margin: 0.25rem 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(4px);
+    text-decoration: none;
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.nav-link i {
+    font-size: 1.1rem;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+    z-index: 1031;
+}
+
+.sidebar-toggle:hover {
+    background: var(--border-light);
+    color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.sidebar-toggle:active {
+    transform: scale(0.95);
+}
+
+.sidebar-toggle i {
+    font-size: 1.25rem;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-toggle.active i {
+    transform: rotate(180deg);
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 280px;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+    position: relative;
+}
+
+.main-content.expanded {
+    margin-left: 0;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.mobile-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Mobile Close Button */
+.mobile-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1003;
+}
+
+.mobile-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.mobile-close-btn i {
+    font-size: 1.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        z-index: 1002;
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .top-nav {
+        padding: 0.75rem 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.25rem;
+    }
+    
+    .top-nav-left {
+        gap: 0.75rem;
+    }
+    
+    .sidebar-toggle {
+        display: flex;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        width: 85%;
+        max-width: 300px;
+    }
+    
+    .sidebar-header {
+        padding: 1rem;
+    }
+    
+    .sidebar-brand {
+        font-size: 1.25rem;
+        padding-right: 2.5rem;
+    }
+    
+    .sidebar-brand i {
+        font-size: 1.5rem;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 0.875rem;
+        margin: 0.125rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .top-nav {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .page-title {
+        font-size: 1.1rem;
+    }
+    
+    .top-nav-left {
+        gap: 0.5rem;
+    }
+}
+
+/* Dark Mode Support */
+body.dark .sidebar-toggle {
+    color: var(--dark-text-primary);
+}
+
+body.dark .sidebar-toggle:hover {
+    background: var(--dark-bg-tertiary);
+    color: var(--primary-color);
+}
+
+/* Animation Classes */
+.sidebar-enter {
+    transform: translateX(-100%);
+}
+
+.sidebar-enter-active {
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+}
+
+.sidebar-exit {
+    transform: translateX(0);
+}
+
+.sidebar-exit-active {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+/* Scrollbar Styling */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Focus States for Accessibility */
+.sidebar-toggle:focus,
+.nav-link:focus,
+.mobile-close-btn:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .sidebar {
+        border-right: 2px solid white;
+    }
+    
+    .nav-link {
+        border: 1px solid transparent;
+    }
+    
+    .nav-link:hover,
+    .nav-link.active {
+        border-color: white;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .main-content,
+    .nav-link,
+    .sidebar-toggle,
+    .mobile-overlay {
+        transition: none;
+    }
+    
+    .nav-link:hover {
+        transform: none;
+    }
+}
+
