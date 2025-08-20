@@ -110,20 +110,7 @@ class Admin extends BaseController
             // Mulai transaction
             $this->db->transStart();
             
-            // 1. Insert ke tabel users (untuk autentikasi)
-            $userData = [
-                'nama' => $request->getPost('nama'),
-                'username' => $request->getPost('username'),
-                'password' => $password,
-                'role' => 'siswa',
-                'status' => 'aktif',
-                'created_at' => date('Y-m-d H:i:s')
-            ];
-            
-            $this->db->table('users')->insert($userData);
-            $userId = $this->db->insertID();
-            
-            // 2. Insert ke tabel siswa (untuk data spesifik)
+            // Insert ke tabel siswa
             $siswaData = [
                 'nama' => $request->getPost('nama'),
                 'username' => $request->getPost('username'),
@@ -247,8 +234,8 @@ class Admin extends BaseController
             
             $username = $siswa['username'];
             
-            // Hapus foto profil jika ada
-            if ($siswa['foto_profil']) {
+            // Hapus foto profil jika ada (jika ada field foto_profil)
+            if (isset($siswa['foto_profil']) && $siswa['foto_profil']) {
                 $photoPath = WRITEPATH . 'uploads/profile/' . $siswa['foto_profil'];
                 if (file_exists($photoPath)) {
                     unlink($photoPath);
@@ -258,14 +245,15 @@ class Admin extends BaseController
             // Hapus data dari tabel siswa
             $this->db->table('siswa')->where('id', $id)->delete();
             
-            // Hapus data dari tabel users berdasarkan username
-            $this->db->table('users')->where('username', $username)->delete();
-            
             // Hapus log aktivitas terkait
             $this->db->table('log_aktivitas')->where('siswa_id', $id)->delete();
             
             // Hapus komentar pembimbing terkait
-            $this->db->table('komentar_pembimbing')->where('log_id IN (SELECT id FROM log_aktivitas WHERE siswa_id = ' . $id . ')')->delete();
+            $logIds = $this->db->table('log_aktivitas')->where('siswa_id', $id)->get()->getResultArray();
+            if (!empty($logIds)) {
+                $logIdsArray = array_column($logIds, 'id');
+                $this->db->table('komentar_pembimbing')->whereIn('log_id', $logIdsArray)->delete();
+            }
             
             // Commit transaction
             $this->db->transComplete();
@@ -332,20 +320,7 @@ class Admin extends BaseController
             // Mulai transaction
             $this->db->transStart();
             
-            // 1. Insert ke tabel users (untuk autentikasi)
-            $userData = [
-                'nama' => $request->getPost('nama'),
-                'username' => $request->getPost('username'),
-                'password' => $password,
-                'role' => 'pembimbing',
-                'status' => 'aktif',
-                'created_at' => date('Y-m-d H:i:s')
-            ];
-            
-            $this->db->table('users')->insert($userData);
-            $userId = $this->db->insertID();
-            
-            // 2. Insert ke tabel pembimbing (untuk data spesifik)
+            // Insert ke tabel pembimbing
             $pembimbingData = [
                 'nama' => $request->getPost('nama'),
                 'username' => $request->getPost('username'),
@@ -411,9 +386,7 @@ class Admin extends BaseController
         // Validasi input
         $rules = [
             'nama' => 'required|min_length[3]',
-            'username' => 'required|min_length[3]',
-            'instansi' => 'required|min_length[3]',
-            'jabatan' => 'required|min_length[3]'
+            'username' => 'required|min_length[3]'
         ];
         
         if (!$this->validate($rules)) {
@@ -466,8 +439,8 @@ class Admin extends BaseController
             
             $username = $pembimbing['username'];
             
-            // Hapus foto profil jika ada
-            if ($pembimbing['foto_profil']) {
+            // Hapus foto profil jika ada (jika ada field foto_profil)
+            if (isset($pembimbing['foto_profil']) && $pembimbing['foto_profil']) {
                 $photoPath = WRITEPATH . 'uploads/profile/' . $pembimbing['foto_profil'];
                 if (file_exists($photoPath)) {
                     unlink($photoPath);
@@ -477,14 +450,10 @@ class Admin extends BaseController
             // Hapus data dari tabel pembimbing
             $this->db->table('pembimbing')->where('id', $id)->delete();
             
-            // Hapus data dari tabel users berdasarkan username
-            $this->db->table('users')->where('username', $username)->delete();
-            
             // Hapus komentar pembimbing terkait
             $this->db->table('komentar_pembimbing')->where('pembimbing_id', $id)->delete();
             
-            // Update siswa yang dibimbing oleh pembimbing ini
-            $this->db->table('siswa')->where('pembimbing_id', $id)->update(['pembimbing_id' => null]);
+            // Hapus komentar pembimbing terkait (relasi sekarang melalui komentar_pembimbing)
             
             // Commit transaction
             $this->db->transComplete();
@@ -618,14 +587,18 @@ class Admin extends BaseController
                                ->get()
                                ->getResultArray();
         
-        // Ambil siswa yang sudah dibimbing oleh pembimbing ini
-        $assignedSiswa = $this->db->table('siswa')
-                                  ->where('pembimbing_id', $pembimbingId)
-                                  ->where('status', 'aktif')
+        // Ambil siswa yang sudah dibimbing oleh pembimbing ini melalui komentar_pembimbing
+        $assignedSiswa = $this->db->table('komentar_pembimbing')
+                                  ->select('log_aktivitas.siswa_id, siswa.nama, siswa.nis')
+                                  ->join('log_aktivitas', 'log_aktivitas.id = komentar_pembimbing.log_id')
+                                  ->join('siswa', 'siswa.id = log_aktivitas.siswa_id')
+                                  ->where('komentar_pembimbing.pembimbing_id', $pembimbingId)
+                                  ->where('siswa.status', 'aktif')
+                                  ->groupBy('log_aktivitas.siswa_id')
                                   ->get()
                                   ->getResultArray();
         
-        $assignedIds = array_column($assignedSiswa, 'id');
+        $assignedIds = array_column($assignedSiswa, 'siswa_id');
         
         $data = [
             'title' => 'Atur Bimbingan - ' . $pembimbing['nama'],
@@ -647,16 +620,33 @@ class Admin extends BaseController
         $siswaIds = $request->getPost('siswa_ids') ?? [];
         
         try {
-            // Reset semua pembimbing_id untuk pembimbing ini
-            $this->db->table('siswa')
+            // Hapus semua komentar pembimbing yang ada untuk pembimbing ini
+            $this->db->table('komentar_pembimbing')
                      ->where('pembimbing_id', $pembimbingId)
-                     ->update(['pembimbing_id' => null]);
+                     ->delete();
             
-            // Set pembimbing_id baru untuk siswa yang dipilih
+            // Buat komentar pembimbing baru untuk siswa yang dipilih
             if (!empty($siswaIds)) {
-                $this->db->table('siswa')
-                         ->whereIn('id', $siswaIds)
-                         ->update(['pembimbing_id' => $pembimbingId]);
+                // Ambil log aktivitas terbaru dari setiap siswa
+                foreach ($siswaIds as $siswaId) {
+                    $latestLog = $this->db->table('log_aktivitas')
+                                         ->where('siswa_id', $siswaId)
+                                         ->orderBy('created_at', 'DESC')
+                                         ->limit(1)
+                                         ->get()
+                                         ->getRowArray();
+                    
+                    if ($latestLog) {
+                        $this->db->table('komentar_pembimbing')->insert([
+                            'log_id' => $latestLog['id'],
+                            'pembimbing_id' => $pembimbingId,
+                            'komentar' => 'Pembimbing ditugaskan untuk membimbing siswa ini',
+                            'rating' => null,
+                            'status' => 'pending',
+                            'created_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
             }
             
             return redirect()->to('/admin/atur-bimbingan')->with('success', 'Pengaturan bimbingan berhasil disimpan');

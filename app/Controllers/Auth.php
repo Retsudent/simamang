@@ -69,19 +69,7 @@ class Auth extends Controller
     private function findUserInAllTables($username)
     {
         try {
-            // Cek di tabel users (unified system) - PRIORITAS UTAMA
-            $user = $this->db->table('users')
-                             ->where('username', $username)
-                             ->where('status', 'aktif')
-                             ->get()
-                             ->getRowArray();
-            
-            if ($user) {
-                $user['table'] = 'users';
-                return $user;
-            }
-
-            // Fallback: Cek di tabel role-specific (untuk backward compatibility)
+            // Cek di tabel role-specific
             $admin = $this->db->table('admin')
                               ->where('username', $username)
                               ->where('status', 'aktif')
@@ -174,19 +162,7 @@ class Auth extends Controller
             // Mulai transaction
             $this->db->transStart();
             
-            // 1. Insert ke tabel users (untuk autentikasi)
-            $userData = [
-                'nama' => $request->getPost('nama'),
-                'username' => $request->getPost('username'),
-                'password' => $passwordHash,
-                'role' => 'siswa',
-                'status' => 'aktif',
-                'created_at' => date('Y-m-d H:i:s')
-            ];
-            
-            $this->db->table('users')->insert($userData);
-            
-            // 2. Insert ke tabel siswa (untuk data spesifik)
+            // Insert ke tabel siswa
             $siswaData = [
                 'nama' => $request->getPost('nama'),
                 'username' => $request->getPost('username'),
@@ -220,14 +196,7 @@ class Auth extends Controller
 
     private function isUsernameExists($username)
     {
-        // Cek di tabel users (unified) - PRIORITAS UTAMA
-        $users = $this->db->table('users')->where('username', $username)->countAllResults();
-        
-        if ($users > 0) {
-            return true;
-        }
-        
-        // Fallback: Cek di tabel role-specific (untuk backward compatibility)
+        // Cek di tabel role-specific
         $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
         $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
         $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();
