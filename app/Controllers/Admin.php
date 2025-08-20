@@ -27,8 +27,8 @@ class Admin extends BaseController
         helper('TimeHelper');
         
         // Hitung statistik dari tabel terpisah
-        $totalSiswa = $this->db->table('siswa')->where('status', 'aktif')->countAllResults();
-        $totalPembimbing = $this->db->table('pembimbing')->where('status', 'aktif')->countAllResults();
+        $totalSiswa = $this->db->table('siswa')->countAllResults();
+        $totalPembimbing = $this->db->table('pembimbing')->countAllResults();
         $totalLog = $this->db->table('log_aktivitas')->countAllResults();
         $logPending = $this->db->table('log_aktivitas')->where('status', 'menunggu')->countAllResults();
         
@@ -55,7 +55,7 @@ class Admin extends BaseController
 
     public function kelolaSiswa()
     {
-        $siswa = $this->db->table('siswa')->where('status', 'aktif')->get()->getResultArray();
+        $siswa = $this->db->table('siswa')->get()->getResultArray();
         
         $data = [
             'title' => 'Kelola Data Siswa - SIMAMANG',
@@ -223,7 +223,7 @@ class Admin extends BaseController
         }
         
         try {
-            // Mulai transaction
+            // Mulai transaction untuk memastikan konsistensi data
             $this->db->transStart();
             
             // Ambil data siswa untuk mendapatkan username
@@ -231,8 +231,6 @@ class Admin extends BaseController
             if (!$siswa) {
                 return redirect()->to('/admin/kelola-siswa')->with('error', 'Data siswa tidak ditemukan');
             }
-            
-            $username = $siswa['username'];
             
             // Hapus foto profil jika ada (jika ada field foto_profil)
             if (isset($siswa['foto_profil']) && $siswa['foto_profil']) {
@@ -242,39 +240,35 @@ class Admin extends BaseController
                 }
             }
             
-            // Hapus data dari tabel siswa
-            $this->db->table('siswa')->where('id', $id)->delete();
-            
-            // Hapus log aktivitas terkait
+            // Hapus data log aktivitas siswa terlebih dahulu (karena ada foreign key)
             $this->db->table('log_aktivitas')->where('siswa_id', $id)->delete();
             
-            // Hapus komentar pembimbing terkait
+            // Hapus data komentar pembimbing yang terkait dengan log siswa ini
             $logIds = $this->db->table('log_aktivitas')->where('siswa_id', $id)->get()->getResultArray();
             if (!empty($logIds)) {
                 $logIdsArray = array_column($logIds, 'id');
                 $this->db->table('komentar_pembimbing')->whereIn('log_id', $logIdsArray)->delete();
             }
             
-            // Commit transaction
-            $this->db->transComplete();
-            
-            if ($this->db->transStatus() === false) {
-                return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus siswa. Silakan coba lagi.');
+            // Hapus data siswa dari database (hard delete)
+            if ($this->db->table('siswa')->where('id', $id)->delete()) {
+                $this->db->transComplete();
+                return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil dihapus');
+            } else {
+                $this->db->transRollback();
+                return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus siswa');
             }
             
-            return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil dihapus permanen');
-            
         } catch (\Exception $e) {
-            // Rollback jika ada error
             $this->db->transRollback();
-            log_message('error', 'Error hapus siswa: ' . $e->getMessage());
-            return redirect()->to('/admin/kelola-siswa')->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
+            log_message('error', 'Error in hapusSiswa: ' . $e->getMessage());
+            return redirect()->to('/admin/kelola-siswa')->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 
     public function kelolaPembimbing()
     {
-        $pembimbing = $this->db->table('pembimbing')->where('status', 'aktif')->get()->getResultArray();
+        $pembimbing = $this->db->table('pembimbing')->get()->getResultArray();
         
         $data = [
             'title' => 'Kelola Data Pembimbing - SIMAMANG',
@@ -428,7 +422,7 @@ class Admin extends BaseController
         }
         
         try {
-            // Mulai transaction
+            // Mulai transaction untuk memastikan konsistensi data
             $this->db->transStart();
             
             // Ambil data pembimbing untuk mendapatkan username
@@ -436,8 +430,6 @@ class Admin extends BaseController
             if (!$pembimbing) {
                 return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Data pembimbing tidak ditemukan');
             }
-            
-            $username = $pembimbing['username'];
             
             // Hapus foto profil jika ada (jika ada field foto_profil)
             if (isset($pembimbing['foto_profil']) && $pembimbing['foto_profil']) {
@@ -447,28 +439,22 @@ class Admin extends BaseController
                 }
             }
             
-            // Hapus data dari tabel pembimbing
-            $this->db->table('pembimbing')->where('id', $id)->delete();
-            
-            // Hapus komentar pembimbing terkait
+            // Hapus data komentar pembimbing terlebih dahulu
             $this->db->table('komentar_pembimbing')->where('pembimbing_id', $id)->delete();
             
-            // Hapus komentar pembimbing terkait (relasi sekarang melalui komentar_pembimbing)
-            
-            // Commit transaction
-            $this->db->transComplete();
-            
-            if ($this->db->transStatus() === false) {
-                return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus pembimbing. Silakan coba lagi.');
+            // Hapus data pembimbing dari database (hard delete)
+            if ($this->db->table('pembimbing')->where('id', $id)->delete()) {
+                $this->db->transComplete();
+                return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil dihapus');
+            } else {
+                $this->db->transRollback();
+                return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus pembimbing');
             }
             
-            return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil dihapus permanen');
-            
         } catch (\Exception $e) {
-            // Rollback jika ada error
             $this->db->transRollback();
-            log_message('error', 'Error hapus pembimbing: ' . $e->getMessage());
-            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
+            log_message('error', 'Error in hapusPembimbing: ' . $e->getMessage());
+            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 
