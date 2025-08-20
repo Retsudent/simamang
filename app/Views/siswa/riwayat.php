@@ -136,7 +136,7 @@
                                                class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <?php if ($log['status'] == 'menunggu'): ?>
+                                            <?php if ($log['status'] == 'menunggu' || $log['status'] == 'revisi'): ?>
                                                 <a href="<?= base_url('siswa/edit-log/' . $log['id']) ?>" 
                                                    class="btn btn-sm btn-outline-warning">
                                                     <i class="bi bi-pencil"></i>

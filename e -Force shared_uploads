@@ -1,0 +1,10 @@
+[33m147748b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m fix: resolve merge conflicts and photo profile issues - Fix merge conflicts in login.php - Remove duplicate footer content - Add cache busting for photo profile display - Prioritize session data over database data for photo profile - Add refresh parameter on photo upload redirect
+[33m32028db[m feat: add revisi count info in student list - Add revisi_count calculation in Pembimbing::aktivitasSiswa() - Update view to display 4 columns: Total Log, Menunggu, Disetujui, Direvisi - Clean up all test files - Fix database connection and user system - Improve UI/UX with collapsible navbar and real-time clock
+[33m996e027[m fix: Clean up login.php file and resolve merge conflicts
+[33m113d0d5[m fix: Resolve merge conflicts and complete integration
+[33m6169ef4[m feat: Major update SIMAMANG with comprehensive improvements
+[33m8f826d1[m fix: clean login view (remove duplicate), better Auth login logs, ensure MySQL driver
+[33mb64785b[m Update file terbaru
+[33m658b001[m feat: redesign login page with modern elegant design - gradient background - glassmorphism card - animated shapes - improved typography - responsive design - smooth animations
+[33md3c012c[m Initial commit: SIMAMANG project with modern sidebar design
+[33m9504858[m Update file terbaru

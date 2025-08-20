@@ -23,13 +23,9 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <?php if(session()->getFlashdata('error')): ?>
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle"></i> <?= session()->getFlashdata('error') ?>
-                        </div>
-                    <?php endif; ?>
+                    <?php /* moved flash to layout to avoid duplicates */ ?>
 
-                    <form method="post" action="<?= base_url('siswa/generate-laporan') ?>">
+                    <form method="post" action="<?= base_url('siswa/generate-laporan') ?>" id="generateReportForm" data-loader="page">
                         <?= csrf_field() ?>
                         
                         <div class="row">
@@ -75,8 +71,9 @@
                             <a href="<?= base_url('siswa/dashboard') ?>" class="btn btn-outline-secondary me-md-2">
                                 <i class="bi bi-x-circle"></i> Batal
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-file-earmark-pdf"></i> Generate Laporan PDF
+                            <button type="submit" class="btn btn-primary" id="generateReportBtn">
+                                <span class="btn-text"><i class="bi bi-file-earmark-pdf"></i> Generate Laporan PDF</span>
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
                     </form>
@@ -92,7 +89,7 @@
                 </div>
                 <div class="card-body">
                     <div class="report-buttons-container">
-                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=week') ?>" class="report-button week-btn">
+                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=week') ?>" class="report-button week-btn use-loader">
                             <div class="button-icon">
                                 <i class="bi bi-calendar-week"></i>
                             </div>
@@ -102,7 +99,7 @@
                             </div>
                         </a>
                         
-                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=month') ?>" class="report-button month-btn">
+                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=month') ?>" class="report-button month-btn use-loader">
                             <div class="button-icon">
                                 <i class="bi bi-calendar-month"></i>
                             </div>
@@ -112,7 +109,7 @@
                             </div>
                         </a>
                         
-                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=all') ?>" class="report-button all-btn">
+                        <a href="<?= base_url('siswa/generate-laporan-rapid?period=all') ?>" class="report-button all-btn use-loader">
                             <div class="button-icon">
                                 <i class="bi bi-list-ul"></i>
                             </div>
@@ -437,3 +434,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </style>
 
 <?= $this->endSection() ?>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const form = document.getElementById('generateReportForm');
+  const btn = document.getElementById('generateReportBtn');
+  if (form && btn) {
+    form.addEventListener('submit', function(){
+      btn.classList.add('is-loading');
+      btn.querySelector('.btn-text').classList.add('d-none');
+      btn.querySelector('.spinner-border').classList.remove('d-none');
+    });
+  }
+});
+</script>

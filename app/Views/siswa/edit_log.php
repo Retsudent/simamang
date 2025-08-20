@@ -7,16 +7,11 @@
             <div class="card shadow">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-edit mr-2"></i>Edit Log Aktivitas
+                        <i class="bi bi-pencil-square me-2"></i>Edit Log Aktivitas
                     </h6>
                 </div>
                 <div class="card-body">
-                    <?php if (session()->getFlashdata('error')): ?>
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle mr-2"></i>
-                            <?= session()->getFlashdata('error') ?>
-                        </div>
-                    <?php endif; ?>
+                    <?php /* flash handled in layout as toast */ ?>
 
                     <?php if (session()->getFlashdata('errors')): ?>
                         <div class="alert alert-danger">
@@ -31,13 +26,13 @@
 
                     <!-- Current Log Info -->
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle mr-2"></i>
+                        <i class="bi bi-info-circle me-2"></i>
                         <strong>Info:</strong> Anda sedang mengedit log aktivitas tanggal 
                         <strong><?= date('d/m/Y', strtotime($log['tanggal'])) ?></strong> 
                         dengan status <strong><?= ucfirst($log['status']) ?></strong>.
                         <?php if ($log['status'] !== 'menunggu'): ?>
                             <br><small class="text-warning">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                <i class="bi bi-exclamation-triangle me-1"></i>
                                 Log ini sudah direview pembimbing. Perubahan mungkin memerlukan review ulang.
                             </small>
                         <?php endif; ?>
@@ -51,7 +46,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="tanggal" class="form-label">
-                                        <i class="fas fa-calendar mr-1"></i>Tanggal <span class="text-danger">*</span>
+                                        <i class="bi bi-calendar me-1"></i>Tanggal <span class="text-danger">*</span>
                                     </label>
                                     <input type="date" class="form-control" id="tanggal" name="tanggal" 
                                            value="<?= old('tanggal', $log['tanggal']) ?>" required>
@@ -63,7 +58,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="jam_mulai" class="form-label">
-                                        <i class="fas fa-clock mr-1"></i>Jam Mulai <span class="text-danger">*</span>
+                                        <i class="bi bi-clock me-1"></i>Jam Mulai <span class="text-danger">*</span>
                                     </label>
                                     <input type="time" class="form-control" id="jam_mulai" name="jam_mulai" 
                                            value="<?= old('jam_mulai', $log['jam_mulai']) ?>" required>
@@ -78,7 +73,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="jam_selesai" class="form-label">
-                                        <i class="fas fa-clock mr-1"></i>Jam Selesai <span class="text-danger">*</span>
+                                        <i class="bi bi-clock-fill me-1"></i>Jam Selesai <span class="text-danger">*</span>
                                     </label>
                                     <input type="time" class="form-control" id="jam_selesai" name="jam_selesai" 
                                            value="<?= old('jam_selesai', $log['jam_selesai']) ?>" required>
@@ -90,7 +85,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="bukti" class="form-label">
-                                        <i class="fas fa-paperclip mr-1"></i>Bukti Aktivitas
+                                        <i class="bi bi-paperclip me-1"></i>Bukti Aktivitas
                                     </label>
                                     <input type="file" class="form-control" id="bukti" name="bukti" 
                                            accept="image/*,.pdf,.doc,.docx">
@@ -111,7 +106,7 @@
                         <!-- Activity Description -->
                         <div class="form-group mb-3">
                             <label for="uraian" class="form-label">
-                                <i class="fas fa-tasks mr-1"></i>Uraian Aktivitas <span class="text-danger">*</span>
+                                <i class="bi bi-text-paragraph me-1"></i>Uraian Aktivitas <span class="text-danger">*</span>
                             </label>
                             <textarea class="form-control" id="uraian" name="uraian" rows="8" 
                                       placeholder="Jelaskan detail aktivitas yang Anda lakukan hari ini..." 
@@ -126,7 +121,7 @@
                         <?php if (isset($log['komentar']) && $log['komentar']): ?>
                             <div class="alert alert-warning">
                                 <h6 class="alert-heading">
-                                    <i class="fas fa-comment mr-2"></i>Komentar Pembimbing Saat Ini:
+                                    <i class="bi bi-chat-dots me-2"></i>Komentar Pembimbing Saat Ini:
                                 </h6>
                                 <p class="mb-2"><?= nl2br(esc($log['komentar'])) ?></p>
                                 <small class="text-muted">
@@ -141,7 +136,7 @@
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="konfirmasi" required>
                                 <label class="custom-control-label" for="konfirmasi">
-                                    <i class="fas fa-check-circle mr-1"></i>
+                                    <i class="bi bi-check-circle me-1"></i>
                                     Saya menyatakan bahwa perubahan yang saya buat adalah benar dan akurat
                                 </label>
                             </div>
@@ -151,17 +146,17 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <a href="<?= base_url('siswa/riwayat') ?>" class="btn btn-secondary btn-block">
-                                    <i class="fas fa-arrow-left mr-2"></i>Kembali ke Riwayat
+                                    <i class="bi bi-arrow-left me-2"></i>Kembali ke Riwayat
                                 </a>
                             </div>
                             <div class="col-md-4">
                                 <a href="<?= base_url('siswa/detail-log/' . $log['id']) ?>" class="btn btn-info btn-block">
-                                    <i class="fas fa-eye mr-2"></i>Lihat Detail
+                                    <i class="bi bi-eye me-2"></i>Lihat Detail
                                 </a>
                             </div>
                             <div class="col-md-4">
                                 <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="fas fa-save mr-2"></i>Update Log
+                                    <i class="bi bi-save me-2"></i>Update Log
                                 </button>
                             </div>
                         </div>

@@ -4,15 +4,16 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Kelola Data Siswa</h5>
-    <a href="<?= base_url('admin/tambah-siswa') ?>" class="btn btn-primary">Tambah Siswa</a>
+    <div class="d-flex align-items-center gap-2">
+      <form method="get" class="d-flex" role="search">
+        <input type="search" name="q" value="<?= esc($q ?? '') ?>" class="form-control form-control-sm" placeholder="Cari nama/username/nis/tempat..." aria-label="Cari">
+        <button class="btn btn-sm btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+      </form>
+      <a href="<?= base_url('admin/tambah-siswa') ?>" class="btn btn-primary">Tambah Siswa</a>
+    </div>
   </div>
 
-  <?php if (session()->getFlashdata('success')): ?>
-    <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
-  <?php endif; ?>
-  <?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-  <?php endif; ?>
+  <?php /* flash handled in layout */ ?>
 
   <div class="card">
     <div class="card-body p-0">
@@ -38,7 +39,8 @@
                 <td><?= esc($row['tempat_magang']) ?></td>
                 <td>
                   <a href="<?= base_url('admin/edit-siswa/' . $row['id']) ?>" class="btn btn-sm btn-warning">Edit</a>
-                  <a href="<?= base_url('admin/hapus-siswa/' . $row['id']) ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus siswa ini?')">Hapus</a>
+                  <a href="<?= base_url('admin/hapus-siswa/' . $row['id']) ?>" class="btn btn-sm btn-danger" onclick="return confirm('Nonaktifkan siswa ini?')">Nonaktifkan</a>
+                  <a href="<?= base_url('admin/hapus-siswa/' . $row['id'] . '?permanent=1') ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus permanen siswa ini? Semua data terkait akan dihapus. Lanjutkan?')">Hapus Permanen</a>
                 </td>
               </tr>
             <?php endforeach; else: ?>

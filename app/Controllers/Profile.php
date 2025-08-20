@@ -104,10 +104,16 @@ class Profile extends BaseController
         }
         
         try {
-            // Update data user di tabel users
-            $this->db->table('users')->where('id', $userId)->update($updateData);
+            // Update data di tabel users (tabel utama)
+            $userUpdateData = [
+                'nama' => $updateData['nama'],
+                'email' => $updateData['email'],
+                'no_hp' => $updateData['no_hp'],
+                'updated_at' => $updateData['updated_at']
+            ];
+            $this->db->table('users')->where('id', $userId)->update($userUpdateData);
             
-            // Update data role-specific jika ada
+            // Update data role-specific berdasarkan role
             if ($userRole === 'siswa') {
                 $this->db->table('siswa')->where('user_id', $userId)->update($updateData);
             } elseif ($userRole === 'pembimbing') {
@@ -153,7 +159,15 @@ class Profile extends BaseController
         
         try {
             // Hapus foto lama jika ada
-            $oldPhoto = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
+            $oldPhoto = null;
+            if ($userRole === 'siswa') {
+                $oldPhoto = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+            } elseif ($userRole === 'pembimbing') {
+                $oldPhoto = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+            } elseif ($userRole === 'admin') {
+                $oldPhoto = $this->db->table('admin')->where('user_id', $userId)->get()->getRowArray();
+            }
+            
             if ($oldPhoto && $oldPhoto['foto_profil']) {
                 $oldPhotoPath = WRITEPATH . 'uploads/profile/' . $oldPhoto['foto_profil'];
                 if (file_exists($oldPhotoPath)) {
@@ -172,11 +186,19 @@ class Profile extends BaseController
             
             $file->move($uploadPath, $newName);
             
-            // Update database di tabel users
+            // Update database di tabel users (tabel utama)
             $this->db->table('users')->where('id', $userId)->update([
                 'foto_profil' => $newName,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
+            // Sinkronkan juga ke tabel role-specific agar konsisten saat login ulang
+            if ($userRole === 'siswa') {
+                $this->db->table('siswa')->where('user_id', $userId)->update(['foto_profil' => $newName]);
+            } elseif ($userRole === 'pembimbing') {
+                $this->db->table('pembimbing')->where('user_id', $userId)->update(['foto_profil' => $newName]);
+            } elseif ($userRole === 'admin') {
+                $this->db->table('admin')->where('user_id', $userId)->update(['foto_profil' => $newName]);
+            }
             
             // Update session foto_profil
             $this->session->set('foto_profil', $newName);
@@ -206,7 +228,7 @@ class Profile extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
         
-        // Ambil data user dari tabel users
+        // Ambil data user dari tabel users (tabel utama)
         $userData = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
         
         if (!$userData) {
@@ -222,7 +244,7 @@ class Profile extends BaseController
         $newPasswordHash = password_hash($request->getPost('new_password'), PASSWORD_DEFAULT);
         
         try {
-            // Update password di tabel users
+            // Update password di tabel users (tabel utama)
             $this->db->table('users')->where('id', $userId)->update([
                 'password' => $newPasswordHash,
                 'updated_at' => date('Y-m-d H:i:s')
@@ -236,7 +258,7 @@ class Profile extends BaseController
 
     private function getUserData($userId, $userRole)
     {
-        // Ambil data dari tabel users
+        // Ambil data dari tabel users (tabel utama)
         $userData = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
         
         if (!$userData) {
@@ -253,9 +275,18 @@ class Profile extends BaseController
             $roleData = $this->db->table('admin')->where('user_id', $userId)->get()->getRowArray();
         }
         
-        // Gabungkan data users dengan data role-specific
+        // Gabungkan data users dengan data role-specific dan pertahankan foto_profil dari users bila role-specific kosong
         if ($roleData) {
-            return array_merge($userData, $roleData);
+            $usersFoto = $userData['foto_profil'] ?? null;
+            $userData = array_merge($userData, $roleData);
+            if ((!isset($userData['foto_profil']) || empty($userData['foto_profil'])) && $usersFoto) {
+                $userData['foto_profil'] = $usersFoto;
+            }
+        }
+        
+        // Tambahkan field foto_profil jika belum ada
+        if (!isset($userData['foto_profil'])) {
+            $userData['foto_profil'] = null;
         }
         
         return $userData;

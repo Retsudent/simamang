@@ -28,6 +28,8 @@ $routes->group('siswa', ['filter' => 'auth:siswa'], function($routes) {
     $routes->post('save-log', 'Siswa::saveLog');
     $routes->get('riwayat', 'Siswa::riwayat');
     $routes->get('detail-log/(:num)', 'Siswa::detailLog/$1');
+    $routes->get('edit-log/(:num)', 'Siswa::editLog/$1');
+    $routes->post('update-log/(:num)', 'Siswa::updateLog/$1');
     $routes->get('laporan', 'Siswa::laporan');
     $routes->post('generate-laporan', 'Siswa::generateLaporan');
     $routes->get('generate-laporan-rapid', 'Siswa::generateLaporanRapid');

@@ -25,7 +25,7 @@
                     Form Input Log Aktivitas
                 </div>
                 <div class="card-body">
-                    <form action="<?= base_url('siswa/save-log') ?>" method="post" enctype="multipart/form-data" id="logForm">
+                    <form action="<?= base_url('siswa/save-log') ?>" method="post" enctype="multipart/form-data" id="logForm" data-loader="page">
                         <?= csrf_field() ?>
                         
                         <!-- Date and Time Section -->
@@ -128,9 +128,9 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex gap-3">
-                            <button type="submit" class="btn btn-primary flex-fill">
-                                <i class="bi bi-check-circle me-2"></i>
-                                Simpan Log Aktivitas
+                            <button type="submit" class="btn btn-primary flex-fill" id="submitLogBtn">
+                                <span class="btn-text"><i class="bi bi-check-circle me-2"></i>Simpan Log Aktivitas</span>
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                             </button>
                             <button type="reset" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-clockwise me-2"></i>
@@ -355,6 +355,11 @@ document.getElementById('logForm').addEventListener('submit', function(e) {
         alert('Anda harus menyetujui pernyataan sebelum menyimpan log aktivitas.');
         return;
     }
+    // Show loading state
+    const submitBtn = document.getElementById('submitLogBtn');
+    submitBtn.classList.add('is-loading');
+    submitBtn.querySelector('.btn-text').classList.add('d-none');
+    submitBtn.querySelector('.spinner-border').classList.remove('d-none');
 });
 
 // Auto-save draft (optional)

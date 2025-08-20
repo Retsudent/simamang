@@ -301,6 +301,76 @@
             font-weight: 500;
         }
 
+        /* Dark Mode Toggle Button */
+        .dark-mode-toggle {
+            position: relative;
+            background: linear-gradient(135deg, var(--background-white) 0%, var(--background-light) 100%);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .dark-mode-toggle:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dark-mode-toggle .dark-icon,
+        .dark-mode-toggle .light-icon {
+            position: absolute;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode-toggle .dark-icon {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+
+        .dark-mode-toggle .light-icon {
+            opacity: 0;
+            transform: scale(0.8) rotate(90deg);
+        }
+
+        /* Dark mode active state */
+        body.dark .dark-mode-toggle {
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            border-color: #6b7280;
+            color: #fbbf24;
+        }
+
+        body.dark .dark-mode-toggle:hover {
+            border-color: #fbbf24;
+            color: #fbbf24;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+        }
+
+        body.dark .dark-mode-toggle .dark-icon {
+            opacity: 0;
+            transform: scale(0.8) rotate(-90deg);
+        }
+
+        body.dark .dark-mode-toggle .light-icon {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+
         /* Welcome Section */
         .welcome-section {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
@@ -645,6 +715,54 @@
             color: white;
         }
 
+        /* Global Page Loader */
+        .page-loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .page-loader-overlay.active { display: flex; }
+
+        .page-loader-box {
+            background: var(--background-white);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .loader-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            box-shadow: 0 6px 18px rgba(30, 58, 138, 0.25);
+            animation: pulseGlow 1.4s ease-in-out infinite;
+        }
+
+        .loader-logo i { font-size: 1.2rem; }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 6px 18px rgba(30, 58, 138, 0.25); }
+            50% { transform: scale(1.06); box-shadow: 0 10px 24px rgba(16, 185, 129, 0.35); }
+        }
+
+        /* Button loading state */
+        .btn.is-loading { pointer-events: none; opacity: 0.9; }
+
         /* Forms */
         .form-control, .form-select {
             border: 2px solid var(--border-color);
@@ -787,6 +905,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
 </head>
 <body>
     <!-- Mobile Overlay -->
@@ -882,7 +1001,13 @@
                 <h1 class="page-title"><?= $title ?? 'SIMAMANG' ?></h1>
             </div>
             
-            <div class="top-nav-right">
+            <div class="top-nav-right d-flex align-items-center gap-2">
+                <!-- Dark Mode Toggle Button -->
+                <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+                    <i class="bi bi-moon-fill dark-icon"></i>
+                    <i class="bi bi-sun-fill light-icon"></i>
+                </button>
+                
                 <div class="user-menu dropdown">
                     <div class="user-avatar" data-bs-toggle="dropdown" style="cursor: pointer;">
                                         <?php if (session()->get('foto_profil')): ?>
@@ -913,25 +1038,28 @@
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Flash Messages -->
-            <?php if (session()->getFlashdata('success')): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <?= session()->getFlashdata('success') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-
-            <?php if (session()->getFlashdata('error')): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <?= session()->getFlashdata('error') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
+            <?php $success = session()->getFlashdata('success'); $error = session()->getFlashdata('error'); ?>
+            <!-- Flash toasts rendered via JS below to avoid duplicates and improve UX -->
 
             <!-- Main Content -->
             <?= $this->renderSection('content') ?>
+        </div>
+    </div>
+
+    <!-- Top progress bar -->
+    <div id="topProgress"></div>
+
+    <!-- Global Page Loader -->
+    <div id="pageLoader" class="page-loader-overlay" aria-hidden="true">
+        <div class="page-loader-box">
+            <div class="loader-logo"><i class="bi bi-graph-up-arrow"></i></div>
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></div>
+                    <div class="fw-semibold">Memuat SIMAMANG...</div>
+                </div>
+                <div class="text-muted small mt-1">Mohon tunggu sebentar</div>
+            </div>
         </div>
     </div>
 
@@ -1060,8 +1188,94 @@
                 }
             });
             
-            // Initialize mobile state
-            handleMobileSidebar();
+            // Initialize mobile state (guard if function is not defined)
+            try { if (typeof handleMobileSidebar === 'function') { handleMobileSidebar(); } } catch (e) {}
+
+            // Global loader helpers
+            const pageLoader = document.getElementById('pageLoader');
+            function showLoader() { pageLoader.classList.add('active'); }
+            function hideLoader() { pageLoader.classList.remove('active'); }
+
+            // Mark links with class .use-loader OR sidebar nav links to show loader on navigation
+            document.querySelectorAll('a.use-loader, .sidebar a.nav-link').forEach(function(a){
+                a.addEventListener('click', function(e){
+                    // Skip if modifier keys or target is set (new tab/download)
+                    if (e.metaKey || e.ctrlKey || a.target === '_blank' || a.hasAttribute('download')) return;
+                    showLoader();
+                });
+            });
+
+            // Forms that should show page loader on submit
+            document.querySelectorAll('form[data-loader="page"]').forEach(function(form){
+                form.addEventListener('submit', function(){ showLoader(); });
+            });
+
+            // Auto-hide loader on page show (bfcache)
+            window.addEventListener('pageshow', function() { hideLoader(); });
+
+            // Top progress bar basic behavior
+            const topProgress = document.getElementById('topProgress');
+            function startProgress(){ topProgress.style.width = '20%'; requestAnimationFrame(()=> topProgress.style.width = '70%'); }
+            function endProgress(){ topProgress.style.width = '100%'; setTimeout(()=> topProgress.style.width = '0', 250); }
+            document.querySelectorAll('a.use-loader, .sidebar a.nav-link').forEach(function(a){
+                a.addEventListener('click', function(e){ if (!(e.metaKey||e.ctrlKey||a.target==='_blank')) startProgress(); });
+            });
+            document.querySelectorAll('form[data-loader="page"]').forEach(function(form){
+                form.addEventListener('submit', function(){ startProgress(); });
+            });
+            window.addEventListener('pageshow', function(){ endProgress(); });
+
+            // Dark mode toggle (persisted)
+            const storedTheme = localStorage.getItem('theme');
+            if (storedTheme === 'dark') document.body.classList.add('dark');
+            
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', function(){
+                    document.body.classList.toggle('dark');
+                    localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+                });
+            }
+
+            // Auto-dismiss Bootstrap alerts after 3 seconds
+            setTimeout(function() {
+                document.querySelectorAll('.alert').forEach(function(el){
+                    try {
+                        bootstrap.Alert.getOrCreateInstance(el).close();
+                    } catch (e) {
+                        el.remove();
+                    }
+                });
+            }, 3000);
+
+            // Toast container
+            const toastContainer = document.createElement('div');
+            toastContainer.className = 'position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = 2001;
+            document.body.appendChild(toastContainer);
+
+            // Flashdata toasts
+            const flashSuccess = <?= json_encode($success ?? null) ?>;
+            const flashError = <?= json_encode($error ?? null) ?>;
+            function createToast(message, type) {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                  <div class="toast align-items-center text-bg-${type} border-0" role="status" aria-live="polite" aria-atomic="true">
+                    <div class="d-flex">
+                      <div class="toast-body">
+                        ${type === 'success' ? '<i class="bi bi-check-circle-fill me-2"></i>' : '<i class="bi bi-exclamation-triangle-fill me-2"></i>'}
+                        ${message}
+                      </div>
+                      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                  </div>`;
+                const toastEl = wrapper.firstElementChild;
+                toastContainer.appendChild(toastEl);
+                const t = new bootstrap.Toast(toastEl, { delay: 3000 });
+                t.show();
+            }
+            if (flashSuccess) createToast(flashSuccess, 'success');
+            if (flashError) createToast(flashError, 'danger');
         });
     </script>
 </body>

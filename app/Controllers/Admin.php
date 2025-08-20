@@ -55,11 +55,23 @@ class Admin extends BaseController
 
     public function kelolaSiswa()
     {
-        $siswa = $this->db->table('siswa')->where('status', 'aktif')->get()->getResultArray();
+        $request = service('request');
+        $q = trim((string) ($request->getGet('q') ?? ''));
+        $builder = $this->db->table('siswa')->where('status', 'aktif');
+        if ($q !== '') {
+            $builder->groupStart()
+                    ->like('nama', $q)
+                    ->orLike('username', $q)
+                    ->orLike('nis', $q)
+                    ->orLike('tempat_magang', $q)
+                    ->groupEnd();
+        }
+        $siswa = $builder->get()->getResultArray();
         
         $data = [
             'title' => 'Kelola Data Siswa - SIMAMANG',
-            'siswa' => $siswa
+            'siswa' => $siswa,
+            'q' => $q,
         ];
         
         return view('admin/kelola_siswa', $data);
@@ -119,9 +131,25 @@ class Admin extends BaseController
                 'status' => 'aktif'
             ];
             
+            // Insert ke tabel users terlebih dahulu
+            $userData = [
+                'nama' => $request->getPost('nama'),
+                'username' => $request->getPost('username'),
+                'password' => $password,
+                'role' => 'siswa',
+                'status' => 'aktif'
+            ];
+            
+            $this->db->table('users')->insert($userData);
+            $userId = $this->db->insertID();
+            
+            // Insert ke tabel siswa dengan user_id
+            $siswaData['user_id'] = $userId;
             if ($this->db->table('siswa')->insert($siswaData)) {
                 return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil ditambahkan');
             } else {
+                // Rollback jika gagal insert ke tabel siswa
+                $this->db->table('users')->where('id', $userId)->delete();
                 return redirect()->back()->withInput()->with('error', 'Gagal menambahkan siswa');
             }
             
@@ -197,6 +225,26 @@ class Admin extends BaseController
             $siswaData['password'] = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
         }
         
+        // Ambil user_id dari siswa
+        $siswa = $this->db->table('siswa')->where('id', $id)->get()->getRowArray();
+        if (!$siswa) {
+            return redirect()->to('/admin/kelola-siswa')->with('error', 'Siswa tidak ditemukan');
+        }
+        
+        // Update data di tabel users
+        $userData = [
+            'nama' => $request->getPost('nama'),
+            'username' => $request->getPost('username')
+        ];
+        
+        // Update password jika diisi
+        if ($request->getPost('password')) {
+            $userData['password'] = password_hash($request->getPost('password'), PASSWORD_DEFAULT);
+        }
+        
+        $this->db->table('users')->where('id', $siswa['user_id'])->update($userData);
+        
+        // Update data di tabel siswa
         if ($this->db->table('siswa')->where('id', $id)->update($siswaData)) {
             return redirect()->to('/admin/kelola-siswa')->with('success', 'Data siswa berhasil diupdate');
         } else {
@@ -209,22 +257,70 @@ class Admin extends BaseController
         if (!$id) {
             return redirect()->to('/admin/kelola-siswa')->with('error', 'ID siswa tidak valid');
         }
-        
-        // Soft delete - ubah status menjadi nonaktif
-        if ($this->db->table('siswa')->where('id', $id)->update(['status' => 'nonaktif'])) {
-            return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil dihapus');
-        } else {
-            return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus siswa');
+
+        $request = service('request');
+        $isPermanent = ($request->getGet('permanent') === '1');
+
+        // Ambil user_id dari siswa
+        $siswa = $this->db->table('siswa')->where('id', $id)->get()->getRowArray();
+        if (!$siswa) {
+            return redirect()->to('/admin/kelola-siswa')->with('error', 'Siswa tidak ditemukan');
         }
+
+        if ($isPermanent) {
+            // Hard delete dengan transaksi
+            $this->db->transStart();
+            try {
+                // Hapus komentar terkait log siswa
+                $logs = $this->db->table('log_aktivitas')->select('id')->where('siswa_id', $id)->get()->getResultArray();
+                $logIds = array_column($logs, 'id');
+                if (!empty($logIds)) {
+                    $this->db->table('komentar_pembimbing')->whereIn('log_id', $logIds)->delete();
+                }
+                // Hapus log siswa
+                $this->db->table('log_aktivitas')->where('siswa_id', $id)->delete();
+                // Hapus siswa dan user
+                $this->db->table('siswa')->where('id', $id)->delete();
+                $this->db->table('users')->where('id', $siswa['user_id'])->delete();
+
+                $this->db->transComplete();
+                if ($this->db->transStatus() === false) {
+                    return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus permanen.');
+                }
+                return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa berhasil dihapus permanen.');
+            } catch (\Throwable $e) {
+                $this->db->transRollback();
+                log_message('error', 'Error hard delete siswa: ' . $e->getMessage());
+                return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menghapus permanen: ' . $e->getMessage());
+            }
+        }
+
+        // Soft delete - ubah status menjadi nonaktif di kedua tabel
+        $this->db->table('users')->where('id', $siswa['user_id'])->update(['status' => 'nonaktif']);
+        if ($this->db->table('siswa')->where('id', $id)->update(['status' => 'nonaktif'])) {
+            return redirect()->to('/admin/kelola-siswa')->with('success', 'Siswa dinonaktifkan');
+        }
+        return redirect()->to('/admin/kelola-siswa')->with('error', 'Gagal menonaktifkan siswa');
     }
 
     public function kelolaPembimbing()
     {
-        $pembimbing = $this->db->table('pembimbing')->where('status', 'aktif')->get()->getResultArray();
+        $request = service('request');
+        $q = trim((string) ($request->getGet('q') ?? ''));
+        $builder = $this->db->table('pembimbing')->where('status', 'aktif');
+        if ($q !== '') {
+            $builder->groupStart()
+                    ->like('nama', $q)
+                    ->orLike('username', $q)
+                    ->orLike('email', $q)
+                    ->groupEnd();
+        }
+        $pembimbing = $builder->get()->getResultArray();
         
         $data = [
             'title' => 'Kelola Data Pembimbing - SIMAMANG',
-            'pembimbing' => $pembimbing
+            'pembimbing' => $pembimbing,
+            'q' => $q,
         ];
         
         return view('admin/kelola_pembimbing', $data);
@@ -271,9 +367,27 @@ class Admin extends BaseController
             'status' => 'aktif'
         ];
         
+        // Insert ke tabel users terlebih dahulu
+        $userData = [
+            'nama' => $request->getPost('nama'),
+            'username' => $request->getPost('username'),
+            'password' => $password,
+            'email' => $request->getPost('email'),
+            'no_hp' => $request->getPost('no_hp'),
+            'role' => 'pembimbing',
+            'status' => 'aktif'
+        ];
+        
+        $this->db->table('users')->insert($userData);
+        $userId = $this->db->insertID();
+        
+        // Insert ke tabel pembimbing dengan user_id
+        $pembimbingData['user_id'] = $userId;
         if ($this->db->table('pembimbing')->insert($pembimbingData)) {
             return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil ditambahkan');
         } else {
+            // Rollback jika gagal insert ke tabel pembimbing
+            $this->db->table('users')->where('id', $userId)->delete();
             return redirect()->back()->withInput()->with('error', 'Gagal menambahkan pembimbing');
         }
     }
@@ -351,13 +465,47 @@ class Admin extends BaseController
         if (!$id) {
             return redirect()->to('/admin/kelola-pembimbing')->with('error', 'ID pembimbing tidak valid');
         }
-        
-        // Soft delete - ubah status menjadi nonaktif
-        if ($this->db->table('pembimbing')->where('id', $id)->update(['status' => 'nonaktif'])) {
-            return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing berhasil dihapus');
-        } else {
-            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus pembimbing');
+
+        $request = service('request');
+        $isPermanent = ($request->getGet('permanent') === '1');
+
+        $pembimbing = $this->db->table('pembimbing')->where('id', $id)->get()->getRowArray();
+        if (!$pembimbing) {
+            return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Pembimbing tidak ditemukan');
         }
+
+        if ($isPermanent) {
+            $this->db->transStart();
+            try {
+                // Optional: hapus hubungan bimbingan pada siswa
+                $this->db->table('siswa')->where('pembimbing_id', $id)->update(['pembimbing_id' => null]);
+
+                // Hapus pembimbing dan users terkait
+                $this->db->table('pembimbing')->where('id', $id)->delete();
+                if (!empty($pembimbing['user_id'])) {
+                    $this->db->table('users')->where('id', $pembimbing['user_id'])->delete();
+                }
+
+                $this->db->transComplete();
+                if ($this->db->transStatus() === false) {
+                    return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus permanen.');
+                }
+                return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing dihapus permanen.');
+            } catch (\Throwable $e) {
+                $this->db->transRollback();
+                log_message('error', 'Error hard delete pembimbing: ' . $e->getMessage());
+                return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menghapus permanen: ' . $e->getMessage());
+            }
+        }
+
+        // Soft delete - ubah status menjadi nonaktif di pembimbing dan users
+        if (!empty($pembimbing['user_id'])) {
+            $this->db->table('users')->where('id', $pembimbing['user_id'])->update(['status' => 'nonaktif']);
+        }
+        if ($this->db->table('pembimbing')->where('id', $id)->update(['status' => 'nonaktif'])) {
+            return redirect()->to('/admin/kelola-pembimbing')->with('success', 'Pembimbing dinonaktifkan');
+        }
+        return redirect()->to('/admin/kelola-pembimbing')->with('error', 'Gagal menonaktifkan pembimbing');
     }
 
     public function laporanMagang()
@@ -431,22 +579,30 @@ class Admin extends BaseController
 
     public function aturBimbingan()
     {
-        // Ambil semua pembimbing aktif
-        $pembimbing = $this->db->table('pembimbing')
-                               ->where('status', 'aktif')
-                               ->get()
-                               ->getResultArray();
+        $request = service('request');
+        $qp = trim((string) ($request->getGet('qp') ?? '')); // query pembimbing
+        $qs = trim((string) ($request->getGet('qs') ?? '')); // query siswa
+
+        // Ambil semua pembimbing aktif (dengan filter opsional)
+        $pb = $this->db->table('pembimbing')->where('status', 'aktif');
+        if ($qp !== '') {
+            $pb->groupStart()->like('nama', $qp)->orLike('username', $qp)->orLike('instansi', $qp)->groupEnd();
+        }
+        $pembimbing = $pb->get()->getResultArray();
         
-        // Ambil semua siswa aktif
-        $siswa = $this->db->table('siswa')
-                          ->where('status', 'aktif')
-                          ->get()
-                          ->getResultArray();
+        // Ambil semua siswa aktif (dengan filter opsional)
+        $sw = $this->db->table('siswa')->where('status', 'aktif');
+        if ($qs !== '') {
+            $sw->groupStart()->like('nama', $qs)->orLike('username', $qs)->orLike('nis', $qs)->orLike('tempat_magang', $qs)->groupEnd();
+        }
+        $siswa = $sw->get()->getResultArray();
         
         $data = [
             'title' => 'Atur Bimbingan - SIMAMANG',
             'pembimbing' => $pembimbing,
-            'siswa' => $siswa
+            'siswa' => $siswa,
+            'qp' => $qp,
+            'qs' => $qs,
         ];
         
         return view('admin/atur_bimbingan', $data);
@@ -528,24 +684,25 @@ class Admin extends BaseController
     private function isUsernameExists($username, $excludeId = null)
     {
         try {
-            // Cek di semua tabel
-            $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
-            $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
-            $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();
+            // Cek di tabel users (tabel utama)
+            $query = $this->db->table('users')->where('username', $username);
             
-            // Jika ada excludeId, kurangi 1 dari count yang sesuai
             if ($excludeId) {
-                // Cek di tabel mana excludeId berada
-                $adminCheck = $this->db->table('admin')->where('id', $excludeId)->countAllResults();
-                $pembimbingCheck = $this->db->table('pembimbing')->where('id', $excludeId)->countAllResults();
-                $siswaCheck = $this->db->table('siswa')->where('id', $excludeId)->countAllResults();
+                // Jika excludeId adalah ID dari tabel role-specific, cari user_id yang sesuai
+                $adminCheck = $this->db->table('admin')->where('id', $excludeId)->get()->getRowArray();
+                $pembimbingCheck = $this->db->table('pembimbing')->where('id', $excludeId)->get()->getRowArray();
+                $siswaCheck = $this->db->table('siswa')->where('id', $excludeId)->get()->getRowArray();
                 
-                if ($adminCheck > 0) $admin--;
-                elseif ($pembimbingCheck > 0) $pembimbing--;
-                elseif ($siswaCheck > 0) $siswa--;
+                if ($adminCheck) {
+                    $query->where('id !=', $adminCheck['user_id']);
+                } elseif ($pembimbingCheck) {
+                    $query->where('id !=', $pembimbingCheck['user_id']);
+                } elseif ($siswaCheck) {
+                    $query->where('id !=', $siswaCheck['user_id']);
+                }
             }
             
-            return ($admin > 0 || $pembimbing > 0 || $siswa > 0);
+            return $query->countAllResults() > 0;
         } catch (\Exception $e) {
             log_message('error', 'Error in isUsernameExists: ' . $e->getMessage());
             return false; // Return false jika ada error, biarkan proses lanjut

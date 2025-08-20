@@ -28,7 +28,7 @@ class Siswa extends BaseController
         
         $userId = $this->session->get('user_id');
         
-        // Ambil data siswa berdasarkan user_id
+        // Ambil data siswa berdasarkan user_id dari session
         $siswa_info = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
         
         // Ambil data pembimbing jika ada
@@ -111,7 +111,7 @@ class Siswa extends BaseController
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
             
-            // Cek apakah siswa dengan user_id tersebut ada
+            // Cek apakah siswa dengan user_id dari session ada
             $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
             if (!$siswa) {
                 return redirect()->back()->withInput()->with('error', 'Data siswa tidak ditemukan');
@@ -182,7 +182,7 @@ class Siswa extends BaseController
             $userId = $this->session->get('user_id');
             $request = service('request');
             
-            // Ambil data siswa berdasarkan user_id
+            // Ambil data siswa berdasarkan user_id dari session
             $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
             if (!$siswa) {
                 return redirect()->to('/siswa/dashboard')->with('error', 'Data siswa tidak ditemukan');
@@ -233,7 +233,7 @@ class Siswa extends BaseController
         try {
             $userId = $this->session->get('user_id');
             
-            // Ambil data siswa berdasarkan user_id
+            // Ambil data siswa berdasarkan user_id dari session
             $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
             if (!$siswa) {
                 return redirect()->to('/siswa/dashboard')->with('error', 'Data siswa tidak ditemukan');
@@ -263,6 +263,100 @@ class Siswa extends BaseController
         } catch (\Exception $e) {
             log_message('error', 'Error in detailLog: ' . $e->getMessage());
             return redirect()->to('/siswa/riwayat')->with('error', 'Terjadi kesalahan saat memuat detail log.');
+        }
+    }
+
+    public function editLog($id)
+    {
+        try {
+            $userId = $this->session->get('user_id');
+            $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+            if (!$siswa) {
+                return redirect()->to('/siswa/riwayat')->with('error', 'Data siswa tidak ditemukan');
+            }
+            $log = $this->db->table('log_aktivitas')->where('id', $id)->get()->getRowArray();
+            if (!$log || $log['siswa_id'] != $siswa['id']) {
+                return redirect()->to('/siswa/riwayat')->with('error', 'Log tidak ditemukan');
+            }
+            // Ambil komentar terakhir (opsional)
+            $comment = $this->db->table('komentar_pembimbing')
+                                ->select('komentar, created_at as komentar_at, pembimbing_id')
+                                ->where('log_id', $id)
+                                ->orderBy('created_at', 'DESC')
+                                ->get()->getRowArray();
+            if ($comment) {
+                $pemb = $this->db->table('pembimbing')->select('nama')->where('id', $comment['pembimbing_id'])->get()->getRowArray();
+                $log['komentar'] = $comment['komentar'];
+                $log['komentar_at'] = $comment['komentar_at'];
+                $log['pembimbing_nama'] = $pemb['nama'] ?? 'Pembimbing';
+            }
+            return view('siswa/edit_log', [ 'title' => 'Edit Log Aktivitas', 'log' => $log ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error in editLog: ' . $e->getMessage());
+            return redirect()->to('/siswa/riwayat')->with('error', 'Terjadi kesalahan saat memuat halaman edit.');
+        }
+    }
+
+    public function updateLog($id)
+    {
+        try {
+            $request = service('request');
+            $userId = $this->session->get('user_id');
+            $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+            if (!$siswa) {
+                return redirect()->to('/siswa/riwayat')->with('error', 'Data siswa tidak ditemukan');
+            }
+            $log = $this->db->table('log_aktivitas')->where('id', $id)->get()->getRowArray();
+            if (!$log || $log['siswa_id'] != $siswa['id']) {
+                return redirect()->to('/siswa/riwayat')->with('error', 'Log tidak ditemukan');
+            }
+
+            // Validasi sederhana
+            $rules = [
+                'tanggal' => 'required|valid_date',
+                'jam_mulai' => 'required',
+                'jam_selesai' => 'required',
+                'uraian' => 'required|min_length[10]'
+            ];
+            if (!$this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+            // Handle file upload opsional
+            $file = $request->getFile('bukti');
+            $buktiName = $log['bukti'];
+            if ($file && $file->isValid() && !$file->hasMoved()) {
+                if ($file->getSize() > 2 * 1024 * 1024) {
+                    return redirect()->back()->withInput()->with('error', 'Ukuran file terlalu besar. Maksimal 2MB.');
+                }
+                $allowedTypes = ['image/jpeg','image/png','image/jpg','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                if (!in_array($file->getMimeType(), $allowedTypes)) {
+                    return redirect()->back()->withInput()->with('error', 'Tipe file tidak diizinkan.');
+                }
+                $originalName = $file->getName();
+                $timestamp = date('Y-m-d_H-i-s');
+                $newName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $timestamp . '_' . $originalName);
+                $uploadDir = WRITEPATH . 'uploads/bukti';
+                if (!is_dir($uploadDir)) { @mkdir($uploadDir, 0775, true); }
+                $file->move($uploadDir, $newName, true);
+                $buktiName = $newName;
+            }
+
+            // Update existing log, reset status ke menunggu agar tidak duplikasi
+            $updateData = [
+                'tanggal' => $request->getPost('tanggal'),
+                'jam_mulai' => $request->getPost('jam_mulai'),
+                'jam_selesai' => $request->getPost('jam_selesai'),
+                'uraian' => $request->getPost('uraian'),
+                'bukti' => $buktiName,
+                'status' => 'menunggu',
+            ];
+            $this->db->table('log_aktivitas')->where('id', $id)->update($updateData);
+
+            return redirect()->to('/siswa/riwayat')->with('success', 'Log berhasil diperbarui dan dikirim untuk review ulang.');
+        } catch (\Throwable $e) {
+            log_message('error', 'Error in updateLog: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan saat memperbarui log.');
         }
     }
 
@@ -392,13 +486,14 @@ class Siswa extends BaseController
             return redirect()->back()->with('error', 'Tanggal awal dan akhir harus diisi');
         }
         
-        // Ambil data siswa dan log beserta komentar
-        $siswa = $this->db->table('siswa')->where('id', $userId)->get()->getRowArray();
+        // Ambil data siswa dan log beserta komentar (gunakan user_id -> siswa.id)
+        $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+        $siswaId = $siswa ? $siswa['id'] : 0;
         $logs = $this->db->table('log_aktivitas')
                          ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
                          ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
                          ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
-                         ->where('log_aktivitas.siswa_id', $userId)
+                         ->where('log_aktivitas.siswa_id', $siswaId)
                          ->where('log_aktivitas.tanggal >=', $startDate)
                          ->where('log_aktivitas.tanggal <=', $endDate)
                          ->orderBy('log_aktivitas.tanggal', 'ASC')
@@ -496,14 +591,15 @@ class Siswa extends BaseController
                 return redirect()->to('/siswa/laporan')->with('error', 'Periode tidak valid');
         }
         
-        // Ambil data siswa dan log aktivitas
-        $siswa = $this->db->table('siswa')->where('id', $userId)->get()->getRowArray();
+        // Ambil data siswa dan log aktivitas (gunakan user_id -> siswa.id)
+        $siswa = $this->db->table('siswa')->where('user_id', $userId)->get()->getRowArray();
+        $siswaId = $siswa ? $siswa['id'] : 0;
         
         $query = $this->db->table('log_aktivitas')
                          ->select('log_aktivitas.*, komentar_pembimbing.komentar, komentar_pembimbing.status_validasi, pembimbing.nama as pembimbing_nama')
                          ->join('komentar_pembimbing', 'komentar_pembimbing.log_id = log_aktivitas.id', 'left')
                          ->join('pembimbing', 'pembimbing.id = komentar_pembimbing.pembimbing_id', 'left')
-                         ->where('log_aktivitas.siswa_id', $userId);
+                         ->where('log_aktivitas.siswa_id', $siswaId);
         
         if ($startDate && $endDate) {
             $query->where('log_aktivitas.tanggal >=', $startDate)
@@ -554,7 +650,7 @@ class Siswa extends BaseController
 
             if (ob_get_level() > 0) { @ob_end_clean(); }
 
-            $filename = 'Laporan_' . $periodTitle . '_' . ($siswa['nama'] ?? 'Siswa') . '_' . date('Ymd_His') . '.pdf';
+            $filename = 'Laporan_' . $periodTitle . ' - ' . ($siswa['nama'] ?? 'Siswa') . '_' . date('Ymd_His') . '.pdf';
             $pdf = $dompdf->output();
             return $this->response
                 ->setStatusCode(200)

@@ -4,15 +4,16 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Kelola Data Pembimbing</h5>
-    <a href="<?= base_url('admin/tambah-pembimbing') ?>" class="btn btn-primary">Tambah Pembimbing</a>
+    <div class="d-flex align-items-center gap-2">
+      <form method="get" class="d-flex" role="search">
+        <input type="search" name="q" value="<?= esc($q ?? '') ?>" class="form-control form-control-sm" placeholder="Cari nama/username/email..." aria-label="Cari">
+        <button class="btn btn-sm btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+      </form>
+      <a href="<?= base_url('admin/tambah-pembimbing') ?>" class="btn btn-primary">Tambah Pembimbing</a>
+    </div>
   </div>
 
-  <?php if (session()->getFlashdata('success')): ?>
-    <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
-  <?php endif; ?>
-  <?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-  <?php endif; ?>
+  <?php /* flash handled in layout */ ?>
 
   <div class="card">
     <div class="card-body p-0">
@@ -34,6 +35,8 @@
                 <td><?= esc($row['username']) ?></td>
                 <td>
                   <a href="<?= base_url('admin/atur-bimbingan-pembimbing/' . $row['id']) ?>" class="btn btn-sm btn-info">Atur Bimbingan</a>
+                  <a href="<?= base_url('admin/hapus-pembimbing/' . $row['id']) ?>" class="btn btn-sm btn-warning" onclick="return confirm('Nonaktifkan pembimbing ini?')">Nonaktifkan</a>
+                  <a href="<?= base_url('admin/hapus-pembimbing/' . $row['id'] . '?permanent=1') ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus permanen pembimbing ini beserta akun users-nya?')">Hapus Permanen</a>
                 </td>
               </tr>
             <?php endforeach; else: ?>

@@ -8,19 +8,7 @@
         <li class="breadcrumb-item active">Profil</li>
     </ol>
 
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= session()->getFlashdata('success') ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= session()->getFlashdata('error') ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
+    
 
     <div class="row">
         <div class="col-xl-4">
@@ -182,7 +170,7 @@
 <div class="modal fade" id="uploadPhotoModal" tabindex="-1" aria-labelledby="uploadPhotoModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('profile/update-photo') ?>" method="post" enctype="multipart/form-data">
+            <form action="<?= base_url('profile/update-photo') ?>" method="post" enctype="multipart/form-data" id="uploadPhotoForm" data-loader="page">
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title" id="uploadPhotoModalLabel">Upload Foto Profil</h5>
@@ -197,7 +185,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary" id="uploadPhotoBtn">
+                        <span class="btn-text">Upload</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -238,3 +229,16 @@
 </div>
 
 <?= $this->endSection() ?>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const form = document.getElementById('uploadPhotoForm');
+  const btn = document.getElementById('uploadPhotoBtn');
+  if (form && btn) {
+    form.addEventListener('submit', function(){
+      btn.classList.add('is-loading');
+      btn.querySelector('.btn-text').classList.add('d-none');
+      btn.querySelector('.spinner-border').classList.remove('d-none');
+    });
+  }
+});
+</script>

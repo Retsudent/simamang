@@ -29,8 +29,11 @@ class Pembimbing extends BaseController
         $userId = $this->session->get('user_id');
 
         // Ambil data pembimbing berdasarkan user_id dari session
-        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
-        $pembimbingId = $pembimbing_info ? $pembimbing_info['id'] : 0;
+        $pembimbingData = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        if (!$pembimbingData) {
+            return redirect()->to('/login')->with('error', 'Data pembimbing tidak ditemukan');
+        }
+        $pembimbingId = $pembimbingData['id'];
         
         // Ambil log menunggu untuk siswa yang dibimbing oleh pembimbing ini
         $pendingLogs = $this->db->table('log_aktivitas')
@@ -108,13 +111,12 @@ class Pembimbing extends BaseController
     {
         $userId = $this->session->get('user_id');
 
-        // Ambil data pembimbing berdasarkan user_id
-        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
-        if (!$pembimbing_info) {
-            return redirect()->to('/pembimbing/dashboard')->with('error', 'Data pembimbing tidak ditemukan');
+        // Ambil data pembimbing berdasarkan user_id dari session
+        $pembimbingData = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        if (!$pembimbingData) {
+            return redirect()->to('/login')->with('error', 'Data pembimbing tidak ditemukan');
         }
-        
-        $pembimbingId = $pembimbing_info['id'];
+        $pembimbingId = $pembimbingData['id'];
 
         $request = service('request');
         $search = $request->getGet('search');
@@ -174,13 +176,12 @@ class Pembimbing extends BaseController
         $startDate = $request->getGet('start_date');
         $endDate = $request->getGet('end_date');
 
-        // Ambil data pembimbing berdasarkan user_id
-        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
-        if (!$pembimbing_info) {
-            return redirect()->to('/pembimbing/dashboard')->with('error', 'Data pembimbing tidak ditemukan');
+        // Ambil data pembimbing berdasarkan user_id dari session
+        $pembimbingData = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        if (!$pembimbingData) {
+            return redirect()->to('/login')->with('error', 'Data pembimbing tidak ditemukan');
         }
-        
-        $pembimbingId = $pembimbing_info['id'];
+        $pembimbingId = $pembimbingData['id'];
         
         $builder = $this->db->table('log_aktivitas')
                              ->select('log_aktivitas.*, kp.komentar, kp.status_validasi, kp.created_at as komentar_at')
@@ -245,13 +246,12 @@ class Pembimbing extends BaseController
             $request = service('request');
             $userId = $this->session->get('user_id');
             
-            // Ambil data pembimbing berdasarkan user_id
-            $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
-            if (!$pembimbing_info) {
+            // Ambil data pembimbing berdasarkan user_id dari session
+            $pembimbingData = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+            if (!$pembimbingData) {
                 return redirect()->back()->with('error', 'Data pembimbing tidak ditemukan');
             }
-            
-            $pembimbingId = $pembimbing_info['id'];
+            $pembimbingId = $pembimbingData['id'];
             
             $logId = $request->getPost('log_id');
             $komentar = $request->getPost('komentar');
@@ -332,13 +332,12 @@ class Pembimbing extends BaseController
     {
         $userId = $this->session->get('user_id');
         
-        // Ambil data pembimbing berdasarkan user_id
-        $pembimbing_info = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
-        if (!$pembimbing_info) {
-            return redirect()->to('/pembimbing/dashboard')->with('error', 'Data pembimbing tidak ditemukan');
+        // Ambil data pembimbing berdasarkan user_id dari session
+        $pembimbingData = $this->db->table('pembimbing')->where('user_id', $userId)->get()->getRowArray();
+        if (!$pembimbingData) {
+            return redirect()->to('/login')->with('error', 'Data pembimbing tidak ditemukan');
         }
-        
-        $pembimbingId = $pembimbing_info['id'];
+        $pembimbingId = $pembimbingData['id'];
         
         // Tampilkan log yang berstatus menunggu untuk siswa bimbingan pembimbing ini
         $logs = $this->db->table('log_aktivitas')

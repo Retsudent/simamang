@@ -1,0 +1,552 @@
+:root {
+	/* keep in sync with layout variables */
+}
+
+/* Dark mode overrides */
+body.dark {
+	--background-light: #0f172a;
+	--background-white: #0b1220;
+	--text-primary: #e2e8f0;
+	--text-secondary: #b6c2cf;
+	--border-color: #1f2937;
+	--border-light: #111827;
+}
+
+/* Cards and containers in dark mode */
+body.dark .card,
+body.dark .table,
+body.dark .quick-actions,
+body.dark .recent-activity {
+	background: var(--background-white);
+	color: var(--text-primary);
+	border-color: var(--border-color);
+}
+
+/* Navigation and top bar */
+body.dark .top-nav { 
+	background: var(--background-white); 
+	border-color: var(--border-color); 
+}
+
+/* Form controls in dark mode */
+body.dark .form-control,
+body.dark .form-select { 
+	background: #0f172a; 
+	color: var(--text-primary); 
+	border-color: var(--border-color); 
+}
+
+body.dark .form-control::placeholder { 
+	color: #94a3b8; /* Brighter placeholder text */
+}
+
+body.dark .form-text { 
+	color: #cbd5e1; /* Brighter help text */
+}
+
+/* Fix muted text colors that clash with dark mode */
+body.dark .text-muted { 
+	color: #cbd5e1 !important; /* Much brighter than before */
+}
+
+body.dark small, 
+body.dark .small { 
+	color: #cbd5e1 !important; /* Much brighter than before */
+}
+
+body.dark .form-control-plaintext { 
+	color: var(--text-primary); 
+}
+
+/* Labels and form elements */
+body.dark label { 
+	color: #e2e8f0; /* Brighter than text-secondary */
+}
+
+body.dark .form-floating > label { 
+	color: #e2e8f0; /* Brighter than before */
+}
+
+body.dark .form-floating > .form-control:focus ~ label,
+body.dark .form-floating > .form-control:not(:placeholder-shown) ~ label { 
+	color: #93c5fd; 
+}
+
+/* Date and time inputs */
+body.dark input[type="time"] { 
+	color-scheme: dark; 
+}
+
+body.dark input[type="date"] { 
+	color-scheme: dark; 
+}
+
+/* Improve calendar icon visibility in dark mode */
+body.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: none; /* keep default icon */
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* Firefox calendar icon */
+@-moz-document url-prefix() {
+  body.dark input[type="date"] {
+    background-color: #0f172a;
+    color: var(--text-primary);
+  }
+}
+
+/* Ensure indicator has space in floating forms */
+.form-floating input[type="date"],
+.form-floating input[type="time"] { 
+	padding-right: 2.75rem; 
+}
+
+/* Tables in dark mode - ensure proper contrast */
+body.dark .table { 
+	background: var(--background-white); 
+	color: var(--text-primary); 
+	border-color: var(--border-color);
+}
+
+body.dark .table thead th { 
+	color: #f1f5f9; /* Brighter header text */
+	border-color: var(--border-color); 
+	background: #1e2937; /* Slightly darker header background */
+}
+
+body.dark .table tbody td { 
+	color: var(--text-primary); 
+	border-color: var(--border-color); 
+}
+
+body.dark .table-hover tbody tr:hover { 
+	background-color: rgba(148, 163, 184, 0.12); /* Slightly more visible */
+}
+
+/* Fix table backgrounds that might still be white */
+body.dark .table-striped > tbody > tr:nth-of-type(odd) > td {
+	background-color: rgba(30, 41, 59, 0.5); /* Subtle striping */
+}
+
+body.dark .table-striped > tbody > tr:nth-of-type(even) > td {
+	background-color: var(--background-white);
+}
+
+/* Ensure all table variants work in dark mode */
+body.dark .table-bordered {
+	border-color: var(--border-color);
+}
+
+body.dark .table-bordered th,
+body.dark .table-bordered td {
+	border-color: var(--border-color);
+}
+
+/* Fix any Bootstrap table classes that might have white backgrounds */
+body.dark .table-responsive {
+	background: transparent;
+}
+
+body.dark .table-sm th,
+body.dark .table-sm td {
+	background: transparent;
+}
+
+/* Force override any remaining white table backgrounds */
+body.dark .table,
+body.dark table {
+	background-color: var(--background-white) !important;
+	color: var(--text-primary) !important;
+}
+
+body.dark .table tbody,
+body.dark table tbody {
+	background-color: var(--background-white) !important;
+}
+
+body.dark .table tbody tr,
+body.dark table tbody tr {
+	background-color: var(--background-white) !important;
+}
+
+body.dark .table tbody tr:nth-child(odd),
+body.dark table tbody tr:nth-child(odd) {
+	background-color: rgba(30, 41, 59, 0.3) !important;
+}
+
+body.dark .table tbody tr:nth-child(even),
+body.dark table tbody tr:nth-child(even) {
+	background-color: var(--background-white) !important;
+}
+
+/* Force override table cell backgrounds */
+body.dark .table tbody td,
+body.dark table tbody td {
+	background-color: inherit !important;
+	color: var(--text-primary) !important;
+	border-color: var(--border-color) !important;
+}
+
+/* Force override table header backgrounds */
+body.dark .table thead,
+body.dark table thead {
+	background-color: #1e2937 !important;
+}
+
+body.dark .table thead th,
+body.dark table thead th {
+	background-color: #1e2937 !important;
+	color: #f1f5f9 !important;
+	border-color: var(--border-color) !important;
+}
+
+/* Fix any specific table classes that might be used */
+body.dark .table-striped > tbody > tr:nth-of-type(odd) > td {
+	background-color: rgba(30, 41, 59, 0.3) !important;
+}
+
+body.dark .table-striped > tbody > tr:nth-of-type(even) > td {
+	background-color: var(--background-white) !important;
+}
+
+/* Fix table hover effects */
+body.dark .table-hover tbody tr:hover {
+	background-color: rgba(148, 163, 184, 0.15) !important;
+}
+
+/* Fix any remaining Bootstrap table utilities */
+body.dark .table-light {
+	background-color: var(--background-white) !important;
+	color: var(--text-primary) !important;
+}
+
+body.dark .table-dark {
+	background-color: #1e2937 !important;
+	color: #f1f5f9 !important;
+}
+
+/* Fix specific text elements in tables that might still be gray */
+body.dark .table tbody td strong,
+body.dark table tbody td strong {
+	color: #f1f5f9 !important;
+}
+
+body.dark .table tbody td small,
+body.dark table tbody td small {
+	color: #cbd5e1 !important;
+}
+
+body.dark .table tbody td .text-muted,
+body.dark table tbody td .text-muted {
+	color: #cbd5e1 !important;
+}
+
+body.dark .table tbody td .text-secondary,
+body.dark table tbody td .text-secondary {
+	color: #cbd5e1 !important;
+}
+
+/* Fix any inline styles that might override our CSS */
+body.dark .table tbody td[style*="color"],
+body.dark table tbody td[style*="color"] {
+	color: var(--text-primary) !important;
+}
+
+body.dark .table tbody td[style*="background"],
+body.dark table tbody td[style*="background"] {
+	background-color: inherit !important;
+}
+
+/* Fix specific table content that might be gray */
+body.dark .table tbody td span,
+body.dark table tbody td span {
+	color: inherit !important;
+}
+
+body.dark .table tbody td div,
+body.dark table tbody td div {
+	color: inherit !important;
+}
+
+/* Fix any remaining gray text in table cells */
+body.dark .table tbody td *,
+body.dark table tbody td * {
+	color: inherit !important;
+}
+
+/* Ensure all text in table cells inherits the proper color */
+body.dark .table tbody td,
+body.dark table tbody td {
+	color: var(--text-primary) !important;
+}
+
+body.dark .table tbody td *,
+body.dark table tbody td * {
+	color: var(--text-primary) !important;
+}
+
+/* Additional fixes for Bootstrap table classes */
+body.dark .table-responsive .table {
+	background-color: var(--background-white) !important;
+}
+
+body.dark .table-responsive .table tbody tr {
+	background-color: var(--background-white) !important;
+}
+
+body.dark .table-responsive .table tbody tr:nth-child(odd) {
+	background-color: rgba(30, 41, 59, 0.3) !important;
+}
+
+body.dark .table-responsive .table tbody tr:nth-child(even) {
+	background-color: var(--background-white) !important;
+}
+
+/* Fix any remaining white backgrounds in table containers */
+body.dark .card .table,
+body.dark .card-body .table {
+	background-color: var(--background-white) !important;
+}
+
+body.dark .card .table tbody tr,
+body.dark .card-body .table tbody tr {
+	background-color: var(--background-white) !important;
+}
+
+/* Force override any remaining white backgrounds */
+body.dark *[class*="table"] {
+	background-color: var(--background-white) !important;
+}
+
+body.dark *[class*="table"] tbody tr {
+	background-color: var(--background-white) !important;
+}
+
+/* Fix any remaining gray text issues */
+body.dark .text-body-secondary,
+body.dark .text-secondary {
+	color: #cbd5e1 !important;
+}
+
+body.dark .text-muted {
+	color: #cbd5e1 !important;
+}
+
+/* Ensure all form elements in tables are properly styled */
+body.dark .table .form-control,
+body.dark .table .form-select {
+	background-color: #0f172a !important;
+	color: var(--text-primary) !important;
+	border-color: var(--border-color) !important;
+}
+
+/* Badges and links */
+body.dark .badge { 
+	filter: saturate(1.05) brightness(1.05); 
+}
+
+body.dark a { 
+	color: #93c5fd; 
+}
+
+body.dark a:hover { 
+	color: #bfdbfe; 
+}
+
+/* Card headers */
+body.dark .card-header { 
+	background: #1e2937; /* Brighter than before */
+	border-color: var(--border-color); 
+	color: #f1f5f9; /* Brighter text */
+}
+
+/* Icons: inherit text color and improve contrast in dark mode */
+body.dark .bi { color: currentColor; }
+body.dark .btn .bi,
+body.dark .badge .bi,
+body.dark .dropdown-item .bi,
+body.dark .table .bi,
+body.dark .card .bi,
+body.dark .nav-link .bi { color: currentColor; }
+
+/* Additional text color fixes for dark mode */
+body.dark .text-secondary { color: #cbd5e1 !important; }
+body.dark .text-body { color: var(--text-primary) !important; }
+body.dark .text-body-secondary { color: #cbd5e1 !important; }
+
+/* Fix any remaining gray text issues */
+body.dark .text-dark { color: #f1f5f9 !important; }
+body.dark .text-light { color: #1e2937 !important; }
+
+/* Profile and user info text */
+body.dark .user-name { color: #f1f5f9 !important; }
+body.dark .user-role { color: #cbd5e1 !important; }
+
+/* Page titles and headings */
+body.dark .page-title { color: #f1f5f9 !important; }
+body.dark h1, body.dark h2, body.dark h3, body.dark h4, body.dark h5, body.dark h6 { color: #f1f5f9 !important; }
+
+/* List items and descriptions */
+body.dark .list-group-item { 
+	background: var(--background-white); 
+	color: var(--text-primary); 
+	border-color: var(--border-color); 
+}
+
+body.dark .list-group-item-action:hover { 
+	background: rgba(148, 163, 184, 0.12); 
+}
+
+/* Modal and popup elements */
+body.dark .modal-content { 
+	background: var(--background-white); 
+	color: var(--text-primary); 
+	border-color: var(--border-color); 
+}
+
+body.dark .modal-header { 
+	background: #1e2937; 
+	border-color: var(--border-color); 
+}
+
+body.dark .modal-footer { 
+	background: #1e2937; 
+	border-color: var(--border-color); 
+}
+
+/* Alert and notification elements */
+body.dark .alert { 
+	background: #1e2937; 
+	color: var(--text-primary); 
+	border-color: var(--border-color); 
+}
+
+body.dark .alert-info { 
+	background: rgba(59, 130, 246, 0.1); 
+	border-color: #3b82f6; 
+	color: #93c5fd; 
+}
+
+body.dark .alert-success { 
+	background: rgba(34, 197, 94, 0.1); 
+	border-color: #22c55e; 
+	color: #86efac; 
+}
+
+body.dark .alert-warning { 
+	background: rgba(251, 191, 36, 0.1); 
+	border-color: #fbbf24; 
+	color: #fde68a; 
+}
+
+body.dark .alert-danger { 
+	background: rgba(239, 68, 68, 0.1); 
+	border-color: #ef4444; 
+	color: #fca5a5; 
+}
+
+/* Fix any remaining text color issues */
+body.dark .text-opacity-75 { color: rgba(241, 245, 249, 0.75) !important; }
+body.dark .text-opacity-50 { color: rgba(241, 245, 249, 0.5) !important; }
+body.dark .text-opacity-25 { color: rgba(241, 245, 249, 0.25) !important; }
+
+/* Fix form validation text */
+body.dark .invalid-feedback { color: #fca5a5 !important; }
+body.dark .valid-feedback { color: #86efac !important; }
+
+/* Fix any remaining gray backgrounds */
+body.dark .bg-light { background-color: #1e2937 !important; }
+body.dark .bg-white { background-color: var(--background-white) !important; }
+body.dark .bg-secondary { background-color: #475569 !important; }
+
+/* Fix any remaining border issues */
+body.dark .border-light { border-color: var(--border-color) !important; }
+body.dark .border-white { border-color: var(--border-color) !important; }
+
+/* Fix any remaining shadow issues */
+body.dark .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important; }
+body.dark .shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3) !important; }
+body.dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3) !important; }
+
+/* Utility text colors tuned for dark backgrounds */
+body.dark .text-primary { color: #93c5fd !important; }
+body.dark .text-success { color: #86efac !important; }
+body.dark .text-info { color: #7dd3fc !important; }
+body.dark .text-warning { color: #fde68a !important; }
+body.dark .text-danger { color: #fca5a5 !important; }
+
+/* Buttons in dark mode - improve contrast */
+body.dark .btn { color: var(--text-primary); }
+body.dark .btn-primary { color: #ffffff; }
+body.dark .btn-success { color: #ffffff; }
+body.dark .btn-outline-primary { color: #93c5fd; border-color: #3b82f6; }
+body.dark .btn-outline-primary:hover { background-color: #1e40af; border-color: #1e40af; color: #ffffff; }
+body.dark .btn-outline-secondary { color: #cbd5e1; border-color: #64748b; }
+body.dark .btn-outline-secondary:hover { background-color: #334155; border-color: #334155; color: #e2e8f0; }
+body.dark .btn-outline-warning { color: #fde68a; border-color: #f59e0b; }
+body.dark .btn-outline-warning:hover { background-color: #a16207; border-color: #a16207; color: #0b1220; }
+
+/* Dropdowns in dark mode */
+body.dark .dropdown-menu { background-color: #0b1220; color: var(--text-primary); border-color: var(--border-color); }
+body.dark .dropdown-item { color: var(--text-primary); }
+body.dark .dropdown-item:hover, body.dark .dropdown-item:focus { background-color: rgba(148, 163, 184, 0.08); color: var(--text-primary); }
+
+/* Upload area (Input Log) */
+body.dark .upload-area { background: #0f172a; border-color: var(--border-color); color: var(--text-secondary); }
+body.dark .upload-area:hover { background: rgba(59,130,246,0.08); border-color: var(--primary-light); }
+body.dark .selected-file { background: #0f172a; border-color: var(--border-color); color: var(--text-primary); }
+
+/* Dark focus states for inputs */
+body.dark .form-control:focus, body.dark .form-select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+/* Skeleton loader */
+.skeleton {
+	position: relative;
+	background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
+	background-size: 400% 100%;
+	animation: skeleton-shimmer 1.4s ease infinite;
+	border-radius: 6px;
+}
+@keyframes skeleton-shimmer {
+	0% { background-position: 100% 50%; }
+	100% { background-position: 0 50%; }
+}
+
+/* Top progress bar */
+#topProgress {
+	position: fixed;
+	top: 0; left: 0; height: 3px; width: 0;
+	background: linear-gradient(90deg, #22c55e, #3b82f6);
+	box-shadow: 0 0 8px rgba(34,197,94,0.6);
+	z-index: 3000;
+	transition: width 0.2s ease;
+}
+
+/* Floating Action Button for siswa */
+.fab-input-log {
+	position: fixed;
+	bottom: 20px; right: 20px;
+	width: 56px; height: 56px;
+	border-radius: 50%;
+	display: flex; align-items: center; justify-content: center;
+	background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+	color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+	z-index: 1500;
+}
+.fab-input-log:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.3); }
+@media (min-width: 769px) { .fab-input-log { display: none; } }
+
+
+/* Small icon button (used for theme toggle) */
+.btn-icon {
+	width: 36px; height: 36px; padding: 0;
+	border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+}
+body.dark .btn-icon.btn-outline-secondary { color: #e2e8f0; border-color: #475569; }
+body.dark .btn-icon.btn-outline-secondary:hover { background-color: #334155; border-color: #334155; }
+
+

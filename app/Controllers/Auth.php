@@ -48,15 +48,14 @@ class Auth extends Controller
                 return redirect()->back()->with('error', 'Password salah')->withInput();
             }
 
-            // set session
+            // set session (pastikan user_id adalah users.id, bukan id dari tabel role-specific)
             $this->session->set([
                 'isLoggedIn' => true,
-                'user_id'    => $user['id'],
+                'user_id'    => $user['users_id'] ?? $user['id'],
                 'username'   => $user['username'],
-                'nama'       => $user['nama'],
+                'nama'       => $user['nama'] ?? ($user['nama_lengkap'] ?? ''),
                 'role'       => $user['role'],
-                'table'      => $user['table'], // tambahkan info tabel asal
-                'foto_profil' => $user['foto_profil'] ?? null // tambahkan foto profil
+                'foto_profil' => $user['foto_profil'] ?? null
             ]);
 
             return redirect()->to($this->roleRedirect($user['role']));
@@ -69,7 +68,7 @@ class Auth extends Controller
     private function findUserInAllTables($username)
     {
         try {
-            // Cek di tabel users (unified system) - PRIORITAS UTAMA
+            // Cek di tabel users (tabel utama)
             $user = $this->db->table('users')
                              ->where('username', $username)
                              ->where('status', 'aktif')
@@ -77,45 +76,38 @@ class Auth extends Controller
                              ->getRowArray();
             
             if ($user) {
-                $user['table'] = 'users';
+                // Ambil data role-specific berdasarkan role
+                $roleData = null;
+                if ($user['role'] === 'admin') {
+                    $roleData = $this->db->table('admin')
+                                        ->where('user_id', $user['id'])
+                                        ->get()
+                                        ->getRowArray();
+                } elseif ($user['role'] === 'pembimbing') {
+                    $roleData = $this->db->table('pembimbing')
+                                        ->where('user_id', $user['id'])
+                                        ->get()
+                                        ->getRowArray();
+                } elseif ($user['role'] === 'siswa') {
+                    $roleData = $this->db->table('siswa')
+                                        ->where('user_id', $user['id'])
+                                        ->get()
+                                        ->getRowArray();
+                }
+                
+                // Gabungkan data users dengan data role-specific tanpa menimpa users.id dan foto_profil dari users
+                if ($roleData) {
+                    $usersId = $user['id'];
+                    $usersFoto = $user['foto_profil'] ?? null;
+                    $user = array_merge($user, $roleData);
+                    $user['users_id'] = $usersId; // preserve users id
+                    // Prefer foto_profil dari tabel users jika role-specific kosong/null
+                    if ((!isset($user['foto_profil']) || empty($user['foto_profil'])) && $usersFoto) {
+                        $user['foto_profil'] = $usersFoto;
+                    }
+                }
+                
                 return $user;
-            }
-
-            // Fallback: Cek di tabel role-specific (untuk backward compatibility)
-            $admin = $this->db->table('admin')
-                              ->where('username', $username)
-                              ->where('status', 'aktif')
-                              ->get()
-                              ->getRowArray();
-            
-            if ($admin) {
-                $admin['role'] = 'admin';
-                $admin['table'] = 'admin';
-                return $admin;
-            }
-
-            $pembimbing = $this->db->table('pembimbing')
-                                   ->where('username', $username)
-                                   ->where('status', 'aktif')
-                                   ->get()
-                                   ->getRowArray();
-            
-            if ($pembimbing) {
-                $pembimbing['role'] = 'pembimbing';
-                $pembimbing['table'] = 'pembimbing';
-                return $pembimbing;
-            }
-
-            $siswa = $this->db->table('siswa')
-                              ->where('username', $username)
-                              ->where('status', 'aktif')
-                              ->get()
-                              ->getRowArray();
-            
-            if ($siswa) {
-                $siswa['role'] = 'siswa';
-                $siswa['table'] = 'siswa';
-                return $siswa;
             }
 
             return null;
@@ -206,19 +198,8 @@ class Auth extends Controller
 
     private function isUsernameExists($username)
     {
-        // Cek di tabel users (unified) - PRIORITAS UTAMA
-        $users = $this->db->table('users')->where('username', $username)->countAllResults();
-        
-        if ($users > 0) {
-            return true;
-        }
-        
-        // Fallback: Cek di tabel role-specific (untuk backward compatibility)
-        $admin = $this->db->table('admin')->where('username', $username)->countAllResults();
-        $pembimbing = $this->db->table('pembimbing')->where('username', $username)->countAllResults();
-        $siswa = $this->db->table('siswa')->where('username', $username)->countAllResults();
-        
-        return ($admin > 0 || $pembimbing > 0 || $siswa > 0);
+        // Cek di tabel users (tabel utama)
+        return $this->db->table('users')->where('username', $username)->countAllResults() > 0;
     }
 
     private function isNISExists($nis)

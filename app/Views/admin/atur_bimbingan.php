@@ -101,6 +101,15 @@
             </h5>
         </div>
         <div class="card-body">
+            <form method="get" class="row g-2 align-items-end mb-3">
+                <div class="col-md-6 col-lg-4">
+                    <label class="form-label mb-1">Cari Pembimbing</label>
+                    <div class="d-flex">
+                        <input type="search" name="qp" value="<?= esc($qp ?? '') ?>" class="form-control" placeholder="Nama/Username">
+                        <button class="btn btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </form>
             <?php if (empty($pembimbing)): ?>
                 <div class="text-center py-4">
                     <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
@@ -119,7 +128,6 @@
                                 <th>Nama Pembimbing</th>
                                 <th>Username</th>
                                 <th>Email</th>
-                                <th>Instansi</th>
                                 <th>Jumlah Siswa</th>
                                 <th>Aksi</th>
                             </tr>
@@ -146,7 +154,6 @@
                                     </td>
                                     <td><code><?= esc($p['username']) ?></code></td>
                                     <td><?= esc($p['email'] ?? '-') ?></td>
-                                    <td><?= esc($p['instansi'] ?? '-') ?></td>
                                     <td>
                                         <span class="badge bg-<?= $jumlahSiswa > 0 ? 'success' : 'secondary' ?>">
                                             <?= $jumlahSiswa ?> siswa
@@ -177,6 +184,16 @@
             </h5>
         </div>
         <div class="card-body">
+            <form method="get" class="row g-2 align-items-end mb-3">
+                <input type="hidden" name="qp" value="<?= esc($qp ?? '') ?>">
+                <div class="col-md-6 col-lg-4">
+                    <label class="form-label mb-1">Cari Siswa</label>
+                    <div class="d-flex">
+                        <input type="search" name="qs" value="<?= esc($qs ?? '') ?>" class="form-control" placeholder="Nama/Username/NIS/Tempat magang">
+                        <button class="btn btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </form>
             <?php if (empty($siswa)): ?>
                 <div class="text-center py-4">
                     <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
