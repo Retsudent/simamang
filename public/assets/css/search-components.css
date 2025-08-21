@@ -1,0 +1,599 @@
+/* Search Components Styling for SIMAMANG */
+
+/* Base search input group styling */
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group .form-control {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.input-group .form-control:focus {
+    background-color: #ffffff;
+    border-color: #86b7fe;
+    color: #495057;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    z-index: 3;
+}
+
+.input-group .form-control::placeholder {
+    color: #6c757d;
+}
+
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: 0;
+}
+
+/* Search button styling */
+.input-group .btn-outline-primary {
+    color: #0d6efd;
+    border-color: #dee2e6;
+    background-color: #fff;
+}
+
+.input-group .btn-outline-primary:hover {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.input-group .btn-outline-primary:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Focus state for input */
+.input-group .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    z-index: 3;
+}
+
+/* Search icon styling */
+.input-group .btn i {
+    font-size: 0.875rem;
+}
+
+/* Responsive search styling */
+@media (max-width: 768px) {
+    .input-group {
+        min-width: 200px;
+    }
+    
+    .input-group .form-control {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .input-group {
+        min-width: 180px;
+        width: 100%;
+    }
+    
+    .input-group .form-control {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .input-group {
+        min-width: 150px;
+        width: 100%;
+    }
+    
+    .input-group .form-control {
+        font-size: 0.875rem;
+    }
+    
+    .input-group .btn {
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .input-group .btn i {
+        font-size: 0.8rem;
+    }
+}
+
+/* Form layout improvements */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Search form container */
+.search-form-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Button styling for search forms */
+.search-form-container .btn-primary {
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+/* Add button styling */
+.add-button {
+    white-space: nowrap;
+    min-width: fit-content;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .add-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .add-button {
+        width: 100%;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Responsive layout for search forms */
+@media (max-width: 768px) {
+    .search-form-container {
+        gap: 1rem;
+    }
+    
+    .search-form-container h5 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-form-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .search-form-container > div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    
+    .search-form-container .btn-primary {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .search-form-container .input-group {
+        width: 100%;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .input-group .form-control {
+        background-color: #212529;
+        border-color: #495057;
+        color: #e9ecef;
+    }
+    
+    .input-group .form-control:focus {
+        background-color: #212529;
+        border-color: #6ea8fe;
+        color: #e9ecef;
+        box-shadow: 0 0 0 0.25rem rgba(110, 168, 254, 0.25);
+    }
+    
+    .input-group .form-control::placeholder {
+        color: #adb5bd;
+    }
+    
+    .input-group .btn-outline-primary {
+        color: #6ea8fe;
+        border-color: #495057;
+        background-color: #212529;
+    }
+    
+    .input-group .btn-outline-primary:hover {
+        color: #fff;
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .form-group label {
+        color: #e9ecef;
+    }
+}
+
+/* Dark mode support for body.dark class */
+body.dark .input-group .form-control {
+    background-color: #212529;
+    border-color: #495057;
+    color: #e9ecef;
+}
+
+body.dark .input-group .form-control:focus {
+    background-color: #212529;
+    border-color: #6ea8fe;
+    color: #e9ecef;
+    box-shadow: 0 0 0 0.25rem rgba(110, 168, 254, 0.25);
+}
+
+body.dark .input-group .form-control::placeholder {
+    color: #adb5bd;
+}
+
+body.dark .input-group .btn-outline-primary {
+    color: #6ea8fe;
+    border-color: #495057;
+    background-color: #212529;
+}
+
+body.dark .input-group .btn-outline-primary:hover {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+body.dark .form-group label {
+    color: #e9ecef;
+}
+
+/* Light mode support for body:not(.dark) */
+body:not(.dark) .input-group .form-control {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+body:not(.dark) .input-group .form-control:focus {
+    background-color: #ffffff;
+    border-color: #86b7fe;
+    color: #495057;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+body:not(.dark) .input-group .form-control::placeholder {
+    color: #6c757d;
+}
+
+body:not(.dark) .input-group .btn-outline-primary {
+    color: #0d6efd;
+    border-color: #dee2e6;
+    background-color: #ffffff;
+}
+
+body:not(.dark) .input-group .btn-outline-primary:hover {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+body:not(.dark) .form-group label {
+    color: #495057;
+}
+
+/* Ensure all form controls follow theme */
+body:not(.dark) .form-control {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+body:not(.dark) .form-control:focus {
+    background-color: #ffffff;
+    border-color: #86b7fe;
+    color: #495057;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+body.dark .form-control {
+    background-color: #212529;
+    border-color: #495057;
+    color: #e9ecef;
+}
+
+body.dark .form-control:focus {
+    background-color: #212529;
+    border-color: #6ea8fe;
+    color: #e9ecef;
+    box-shadow: 0 0 0 0.25rem rgba(110, 168, 254, 0.25);
+}
+
+/* Select dropdown styling */
+body:not(.dark) .form-select {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+body:not(.dark) .form-select:focus {
+    background-color: #ffffff;
+    border-color: #86b7fe;
+    color: #495057;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+body.dark .form-select {
+    background-color: #212529;
+    border-color: #495057;
+    color: #e9ecef;
+}
+
+body.dark .form-select:focus {
+    background-color: #212529;
+    border-color: #6ea8fe;
+    color: #e9ecef;
+    box-shadow: 0 0 0 0.25rem rgba(110, 168, 254, 0.25);
+}
+
+/* Placeholder styling */
+body:not(.dark) .form-control::placeholder {
+    color: #6c757d;
+}
+
+body.dark .form-control::placeholder {
+    color: #adb5bd;
+}
+
+/* Card styling for theme consistency */
+body:not(.dark) .card {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+}
+
+body.dark .card {
+    background-color: #212529;
+    border-color: #495057;
+}
+
+/* Table styling for theme consistency */
+body:not(.dark) .table {
+    color: #495057;
+}
+
+body.dark .table {
+    color: #e9ecef;
+}
+
+body:not(.dark) .table th {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+body.dark .table th {
+    background-color: #343a40;
+    border-color: #495057;
+    color: #e9ecef;
+}
+
+body:not(.dark) .table td {
+    border-color: #dee2e6;
+}
+
+body.dark .table td {
+    border-color: #495057;
+}
+
+/* Button styling for theme consistency */
+body:not(.dark) .btn-outline-secondary {
+    color: #6c757d;
+    border-color: #dee2e6;
+    background-color: #ffffff;
+}
+
+body:not(.dark) .btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+body.dark .btn-outline-secondary {
+    color: #adb5bd;
+    border-color: #495057;
+    background-color: #212529;
+}
+
+body.dark .btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #adb5bd;
+    border-color: #adb5bd;
+}
+
+/* Primary button styling */
+body:not(.dark) .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #ffffff;
+}
+
+body:not(.dark) .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+    color: #ffffff;
+}
+
+body.dark .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #ffffff;
+}
+
+body.dark .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+    color: #ffffff;
+}
+
+/* Text and heading styling for theme consistency */
+body:not(.dark) h1, body:not(.dark) h2, body:not(.dark) h3, 
+body:not(.dark) h4, body:not(.dark) h5, body:not(.dark) h6 {
+    color: #212529;
+}
+
+body.dark h1, body.dark h2, body.dark h3, 
+body.dark h4, body.dark h5, body.dark h6 {
+    color: #e9ecef;
+}
+
+body:not(.dark) .text-muted {
+    color: #6c757d !important;
+}
+
+body.dark .text-muted {
+    color: #adb5bd !important;
+}
+
+/* Background styling for theme consistency */
+body:not(.dark) {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+body.dark {
+    background-color: #121212;
+    color: #e9ecef;
+}
+
+/* Main content area styling for theme consistency */
+body:not(.dark) .main-content {
+    background-color: #f8f9fa;
+}
+
+body.dark .main-content {
+    background-color: #121212;
+}
+
+body:not(.dark) .content-wrapper {
+    background-color: #ffffff;
+}
+
+body.dark .content-wrapper {
+    background-color: #1e1e1e;
+}
+
+/* Top navigation styling for theme consistency */
+body:not(.dark) .top-nav {
+    background-color: #ffffff;
+    border-bottom-color: #dee2e6;
+}
+
+body.dark .top-nav {
+    background-color: #1e1e1e;
+    border-bottom-color: #495057;
+}
+
+/* User menu styling for theme consistency */
+body:not(.dark) .user-menu {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-color: #dee2e6;
+}
+
+body.dark .user-menu {
+    background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+    border-color: #495057;
+}
+
+/* Sidebar styling for theme consistency */
+body:not(.dark) .sidebar {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+}
+
+body.dark .sidebar {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+}
+
+/* Page title styling for theme consistency */
+body:not(.dark) .page-title {
+    color: #212529;
+}
+
+body.dark .page-title {
+    color: #e9ecef;
+}
+
+/* Dropdown menu styling for theme consistency */
+body:not(.dark) .dropdown-menu {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+body.dark .dropdown-menu {
+    background-color: #212529;
+    border-color: #495057;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+}
+
+body:not(.dark) .dropdown-item {
+    color: #495057;
+}
+
+body:not(.dark) .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+body.dark .dropdown-item {
+    color: #e9ecef;
+}
+
+body.dark .dropdown-item:hover {
+    background-color: #343a40;
+    color: #ffffff;
+}
+
+body:not(.dark) .dropdown-divider {
+    border-color: #dee2e6;
+}
+
+body.dark .dropdown-divider {
+    border-color: #495057;
+}
+
+/* Container styling for better mobile experience */
+.container {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}

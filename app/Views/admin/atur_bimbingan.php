@@ -188,9 +188,9 @@
                 <input type="hidden" name="qp" value="<?= esc($qp ?? '') ?>">
                 <div class="col-md-6 col-lg-4">
                     <label class="form-label mb-1">Cari Siswa</label>
-                    <div class="d-flex">
+                    <div class="input-group">
                         <input type="search" name="qs" value="<?= esc($qs ?? '') ?>" class="form-control" placeholder="Nama/Username/NIS/Tempat magang">
-                        <button class="btn btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+                        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
                     </div>
                 </div>
             </form>

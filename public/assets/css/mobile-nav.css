@@ -1,0 +1,285 @@
+/* Mobile Navigation Fixes for SIMAMANG */
+
+/* Mobile breakpoint - tablets and phones */
+@media (max-width: 768px) {
+    .top-nav {
+        min-height: 4rem;
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+    }
+    
+    .top-nav-left {
+        flex: 1;
+        min-width: 0;
+        gap: 0.75rem;
+    }
+    
+    .top-nav-right {
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+    
+    .page-title {
+        font-size: 1.25rem;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .sidebar-toggle {
+        width: 2.5rem;
+        height: 2.5rem;
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+    }
+    
+    .user-menu {
+        padding: 0.5rem 0.75rem;
+        min-height: 2.5rem;
+        flex-shrink: 0;
+    }
+    
+    .user-info {
+        display: none;
+    }
+    
+    .user-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1rem;
+    }
+    
+    .dark-mode-toggle {
+        width: 2.5rem;
+        height: 2.5rem;
+        flex-shrink: 0;
+    }
+    
+    .dark-mode-toggle .dark-icon,
+    .dark-mode-toggle .light-icon {
+        font-size: 1rem;
+    }
+}
+
+/* Small phones */
+@media (max-width: 576px) {
+    .top-nav {
+        padding: 0.5rem 0.75rem;
+        gap: 0.5rem;
+    }
+    
+    .top-nav-left {
+        gap: 0.5rem;
+    }
+    
+    .top-nav-right {
+        gap: 0.5rem;
+    }
+    
+    .page-title {
+        font-size: 1.1rem;
+    }
+    
+    .sidebar-toggle {
+        margin-right: 0.5rem;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+    .top-nav {
+        padding: 0.5rem;
+        gap: 0.25rem;
+        min-height: 3.5rem;
+    }
+    
+    .top-nav-left {
+        gap: 0.25rem;
+    }
+    
+    .top-nav-right {
+        gap: 0.25rem;
+    }
+    
+    .page-title {
+        font-size: 0.9rem;
+        margin: 0 0.25rem;
+    }
+    
+    .sidebar-toggle {
+        width: 2.25rem;
+        height: 2.25rem;
+        margin-right: 0.25rem;
+    }
+    
+    .user-menu {
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .user-avatar {
+        width: 2.25rem;
+        height: 2.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .dark-mode-toggle {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+    
+    .dark-mode-toggle .dark-icon,
+    .dark-mode-toggle .light-icon {
+        font-size: 0.9rem;
+    }
+}
+
+/* Ensure proper flexbox behavior */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.top-nav-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.top-nav-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.page-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-toggle,
+.dark-mode-toggle,
+.user-menu {
+    flex-shrink: 0;
+}
+
+/* Search component styling for mobile */
+@media (max-width: 768px) {
+    .input-group {
+        min-width: 200px;
+    }
+    
+    .input-group .form-control {
+        border-radius: 0.375rem 0 0 0.375rem;
+    }
+    
+    .input-group .btn {
+        border-radius: 0 0.375rem 0.375rem 0;
+    }
+    
+    /* Button styling for mobile */
+    .btn-primary {
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+}
+
+@media (max-width: 576px) {
+    .input-group {
+        min-width: 180px;
+    }
+    
+    /* Responsive layout for search and button */
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .d-flex.justify-content-between.align-items-center > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .input-group {
+        min-width: 150px;
+    }
+    
+    .input-group .form-control {
+        font-size: 0.875rem;
+    }
+    
+    .input-group .btn {
+        padding: 0.375rem 0.75rem;
+    }
+    
+    /* Stack elements vertically on very small screens */
+    .d-flex.justify-content-between.align-items-center > div {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Form styling for mobile */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .form-control {
+        font-size: 0.875rem;
+    }
+    
+    .select.form-control {
+        padding: 0.375rem 0.75rem;
+    }
+    
+    /* Table responsive styling */
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    /* Card and container styling */
+    .card {
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

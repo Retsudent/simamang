@@ -25,9 +25,12 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="search">Cari Siswa</label>
-                                <input type="text" class="form-control" id="search" name="search" 
-                                       placeholder="Nama, NIS, atau tempat magang..." 
-                                       value="<?= request()->getGet('search') ?>">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           placeholder="Nama, NIS, atau tempat magang..." 
+                                           value="<?= request()->getGet('search') ?>">
+                                    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-3">

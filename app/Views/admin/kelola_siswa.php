@@ -2,14 +2,16 @@
 
 <?= $this->section('content') ?>
 <div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-3 search-form-container">
     <h5 class="mb-0">Kelola Data Siswa</h5>
     <div class="d-flex align-items-center gap-2">
       <form method="get" class="d-flex" role="search">
-        <input type="search" name="q" value="<?= esc($q ?? '') ?>" class="form-control form-control-sm" placeholder="Cari nama/username/nis/tempat..." aria-label="Cari">
-        <button class="btn btn-sm btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+        <div class="input-group">
+          <input type="search" name="q" value="<?= esc($q ?? '') ?>" class="form-control" placeholder="Cari nama/username/nis/tempat..." aria-label="Cari">
+          <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+        </div>
       </form>
-      <a href="<?= base_url('admin/tambah-siswa') ?>" class="btn btn-primary">Tambah Siswa</a>
+      <a href="<?= base_url('admin/tambah-siswa') ?>" class="btn btn-primary add-button">Tambah Siswa</a>
     </div>
   </div>
 

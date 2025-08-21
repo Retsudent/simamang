@@ -170,31 +170,41 @@
             box-shadow: var(--shadow-sm);
             position: relative;
             z-index: 1030;
+            min-height: 4rem;
         }
 
         .top-nav-left {
             display: flex;
             align-items: center;
-                gap: 1rem;
-            }
+            gap: 1rem;
+            flex: 1;
+            min-width: 0;
+        }
             
         .top-nav-right {
             display: flex;
             align-items: center;
-                gap: 0.75rem;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            flex-shrink: 0;
         }
 
         .page-title {
-                font-size: 1.5rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-primary);
             margin: 0;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .user-menu {
             display: flex;
             align-items: center;
-                gap: 0.75rem;
+            gap: 0.75rem;
             padding: 0.75rem 1.25rem;
             background: linear-gradient(135deg, var(--background-white) 0%, var(--background-light) 100%);
             border: 1px solid var(--border-color);
@@ -202,6 +212,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: var(--shadow-sm);
+            min-width: fit-content;
+            flex-shrink: 0;
         }
 
         .user-menu:hover {
@@ -216,12 +228,13 @@
             border-radius: 50%;
             display: flex;
             align-items: center;
-                justify-content: center;
+            justify-content: center;
             color: white;
             font-weight: 600;
-                font-size: 1.1rem;
+            font-size: 1.1rem;
             border: 2px solid var(--background-white);
             box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
         }
 
         .user-info {
@@ -250,14 +263,16 @@
             color: var(--text-secondary);
             width: 2.75rem;
             height: 2.75rem;
-                border-radius: 0.75rem;
+            border-radius: 0.75rem;
             display: flex;
             align-items: center;
-                justify-content: center;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: var(--shadow-sm);
             overflow: hidden;
+            flex-shrink: 0;
+            min-width: 2.75rem;
         }
 
         .dark-mode-toggle:hover {
@@ -784,14 +799,24 @@
             
             .top-nav {
                 padding: 0.75rem 1rem;
-            }
-            
-            .page-title {
-                font-size: 1.25rem;
+                flex-direction: row;
+                gap: 0.75rem;
             }
             
             .top-nav-left {
                 gap: 0.75rem;
+                flex: 1;
+            }
+            
+            .top-nav-right {
+                gap: 0.5rem;
+                flex-shrink: 0;
+            }
+            
+            .page-title {
+                font-size: 1.25rem;
+                flex: 1;
+                text-align: left;
             }
         }
 
@@ -930,18 +955,6 @@
                 max-width: 300px;
             }
             
-            .top-nav {
-                padding: 0.5rem 0.75rem;
-            }
-            
-            .page-title {
-                font-size: 1.1rem;
-            }
-            
-            .top-nav-left {
-                gap: 0.5rem;
-            }
-
             .loading-container {
                 padding: 1.5rem;
                 max-width: 280px;
@@ -960,8 +973,49 @@
                 font-size: 0.8rem;
             }
         }
+        
+
+        
+        /* Sidebar toggle button styling */
+        .sidebar-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+            z-index: 1031;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-toggle:hover {
+            background: var(--border-light);
+            color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        
+        .sidebar-toggle:active {
+            transform: scale(0.95);
+        }
+        
+        .sidebar-toggle i {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-toggle.active i {
+            transform: rotate(180deg);
+        }
     </style>
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/mobile-nav.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/search-components.css') ?>">
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -1074,7 +1128,7 @@
                 <h1 class="page-title"><?= $title ?? 'SIMAMANG' ?></h1>
             </div>
             
-            <div class="top-nav-right d-flex align-items-center gap-2">
+            <div class="top-nav-right">
                 <!-- Dark Mode Toggle Button -->
                 <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
                     <i class="bi bi-moon-fill dark-icon"></i>
@@ -1144,6 +1198,9 @@
     
     <!-- Sidebar Toggle Script -->
     <script src="<?= base_url('assets/js/sidebar-toggle.js') ?>"></script>
+    
+    <!-- Search Enhancement Script -->
+    <script src="<?= base_url('assets/js/search-enhancement.js') ?>"></script>
     
     <!-- Main Script -->
     <script>
