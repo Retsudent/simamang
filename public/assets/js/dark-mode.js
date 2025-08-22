@@ -21,9 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update toggle icon
             updateToggleIcon(isDark);
-            
-            // Optional: Show feedback
-            showThemeFeedback(isDark);
         });
         
         // Add hover effects
@@ -58,19 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to show theme feedback
-    function showThemeFeedback(isDark) {
-        const message = isDark ? 'Dark mode diaktifkan' : 'Light mode diaktifkan';
-        const type = 'success';
-        
-        // Create toast notification
-        if (typeof showToast === 'function') {
-            showToast(message, type);
-        } else {
-            // Fallback: simple alert
-            console.log(message);
-        }
-    }
+
     
     // Apply dark mode styles to specific elements
     function applyDarkModeStyles() {

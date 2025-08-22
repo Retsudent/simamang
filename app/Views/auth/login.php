@@ -306,19 +306,8 @@
             </div>
 
             <div class="login-body">
-                <?php if (session()->getFlashdata('error')): ?>
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <?= session()->getFlashdata('error') ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (session()->getFlashdata('success')): ?>
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <?= session()->getFlashdata('success') ?>
-                    </div>
-                <?php endif; ?>
+                <!-- Notifications will be handled by the notification system -->
+                <!-- Flashdata will be automatically converted to toasts -->
 
                 <form action="<?= base_url('login') ?>" method="post">
                     <?= csrf_field() ?>

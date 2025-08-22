@@ -4,19 +4,8 @@
 <div class="container">
   <h5 class="mb-3"><?= isset($siswa) ? 'Edit Siswa' : 'Tambah Siswa' ?></h5>
 
-  <?php if (session()->getFlashdata('errors')): ?>
-    <div class="alert alert-danger">
-      <ul class="mb-0">
-        <?php foreach (session()->getFlashdata('errors') as $error): ?>
-          <li><?= $error ?></li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-  <?php endif; ?>
-
-  <?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-  <?php endif; ?>
+  <!-- Notifications will be handled by the notification system -->
+  <!-- Flashdata will be automatically converted to toasts -->
 
   <div class="card">
     <div class="card-body">

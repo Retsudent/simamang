@@ -191,22 +191,8 @@
             </div>
             
             <div class="register-body">
-                <?php if(session()->getFlashdata('error')): ?>
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle"></i> <?= session()->getFlashdata('error') ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if(session()->getFlashdata('errors')): ?>
-                    <div class="alert alert-danger">
-                        <h6><i class="bi bi-exclamation-triangle"></i> Terdapat kesalahan:</h6>
-                        <ul class="mb-0">
-                            <?php foreach(session()->getFlashdata('errors') as $error): ?>
-                                <li><?= $error ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                <?php endif; ?>
+                <!-- Notifications will be handled by the notification system -->
+                <!-- Flashdata will be automatically converted to toasts -->
 
                 <form method="post" action="<?= base_url('register') ?>" id="registerForm">
                     <?= csrf_field() ?>

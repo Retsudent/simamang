@@ -9,12 +9,8 @@
         <li class="breadcrumb-item active">Edit</li>
     </ol>
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= session()->getFlashdata('error') ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
+    <!-- Notifications will be handled by the notification system -->
+    <!-- Flashdata will be automatically converted to toasts -->
 
     <div class="row">
         <div class="col-xl-8">

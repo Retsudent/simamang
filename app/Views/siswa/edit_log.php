@@ -11,18 +11,8 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <?php /* flash handled in layout as toast */ ?>
-
-                    <?php if (session()->getFlashdata('errors')): ?>
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle mr-2"></i>
-                            <ul class="mb-0">
-                                <?php foreach (session()->getFlashdata('errors') as $error): ?>
-                                    <li><?= $error ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                    <?php endif; ?>
+                    <!-- Notifications will be handled by the notification system -->
+                    <!-- Flashdata will be automatically converted to toasts -->
 
                     <!-- Current Log Info -->
                     <div class="alert alert-info">

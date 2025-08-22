@@ -11,23 +11,8 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <?php if (session()->getFlashdata('error')): ?>
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle mr-2"></i>
-                            <?= session()->getFlashdata('error') ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (session()->getFlashdata('errors')): ?>
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle mr-2"></i>
-                            <ul class="mb-0">
-                                <?php foreach (session()->getFlashdata('errors') as $error): ?>
-                                    <li><?= $error ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                    <?php endif; ?>
+                    <!-- Notifications will be handled by the notification system -->
+                    <!-- Flashdata will be automatically converted to toasts -->
 
                     <form action="<?= base_url('siswa/save-log') ?>" method="post" enctype="multipart/form-data" id="logForm" class="no-loading">
                         <?= csrf_field() ?>

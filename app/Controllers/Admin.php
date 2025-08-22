@@ -631,14 +631,14 @@ class Admin extends BaseController
                                ->get()
                                ->getResultArray();
         
-        // Ambil siswa yang sudah dibimbing oleh pembimbing ini
-        $assignedSiswa = $this->db->table('siswa')
+        // Ambil siswa yang sudah dibimbing oleh pembimbing ini menggunakan tabel pembimbing_siswa
+        $assignedSiswa = $this->db->table('pembimbing_siswa')
+                                  ->select('siswa_id')
                                   ->where('pembimbing_id', $pembimbingId)
-                                  ->where('status', 'aktif')
                                   ->get()
                                   ->getResultArray();
         
-        $assignedIds = array_column($assignedSiswa, 'id');
+        $assignedIds = array_column($assignedSiswa, 'siswa_id');
         
         $data = [
             'title' => 'Atur Bimbingan - ' . $pembimbing['nama'],
@@ -660,16 +660,21 @@ class Admin extends BaseController
         $siswaIds = $request->getPost('siswa_ids') ?? [];
         
         try {
-            // Reset semua pembimbing_id untuk pembimbing ini
-            $this->db->table('siswa')
+            // Reset semua relasi untuk pembimbing ini
+            $this->db->table('pembimbing_siswa')
                      ->where('pembimbing_id', $pembimbingId)
-                     ->update(['pembimbing_id' => null]);
+                     ->delete();
             
-            // Set pembimbing_id baru untuk siswa yang dipilih
+            // Set relasi baru untuk siswa yang dipilih
             if (!empty($siswaIds)) {
-                $this->db->table('siswa')
-                         ->whereIn('id', $siswaIds)
-                         ->update(['pembimbing_id' => $pembimbingId]);
+                $dataToInsert = [];
+                foreach ($siswaIds as $siswaId) {
+                    $dataToInsert[] = [
+                        'pembimbing_id' => $pembimbingId,
+                        'siswa_id' => $siswaId
+                    ];
+                }
+                $this->db->table('pembimbing_siswa')->insertBatch($dataToInsert);
             }
             
             return redirect()->to('/admin/atur-bimbingan')->with('success', 'Pengaturan bimbingan berhasil disimpan');

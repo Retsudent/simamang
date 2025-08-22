@@ -3,10 +3,6 @@
 <?= $this->section('content') ?>
 <div class="container-fluid px-4">
     <h1 class="mt-4">Profil Saya</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="<?= base_url() ?>">Dashboard</a></li>
-        <li class="breadcrumb-item active">Profil</li>
-    </ol>
 
     
 
@@ -170,7 +166,7 @@
 <div class="modal fade" id="uploadPhotoModal" tabindex="-1" aria-labelledby="uploadPhotoModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('profile/update-photo') ?>" method="post" enctype="multipart/form-data" id="uploadPhotoForm" data-loader="page">
+            <form action="<?= base_url('profile/update-photo') ?>" method="post" enctype="multipart/form-data" id="uploadPhotoForm">
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title" id="uploadPhotoModalLabel">Upload Foto Profil</h5>
@@ -235,9 +231,26 @@ document.addEventListener('DOMContentLoaded', function(){
   const btn = document.getElementById('uploadPhotoBtn');
   if (form && btn) {
     form.addEventListener('submit', function(){
+      // Show loading state on button
       btn.classList.add('is-loading');
       btn.querySelector('.btn-text').classList.add('d-none');
       btn.querySelector('.spinner-border').classList.remove('d-none');
+      
+      // Disable button to prevent double submission
+      btn.disabled = true;
+    });
+  }
+  
+  // Reset button state when modal is hidden
+  const modal = document.getElementById('uploadPhotoModal');
+  if (modal) {
+    modal.addEventListener('hidden.bs.modal', function(){
+      if (btn) {
+        btn.classList.remove('is-loading');
+        btn.querySelector('.btn-text').classList.remove('d-none');
+        btn.querySelector('.spinner-border').classList.add('d-none');
+        btn.disabled = false;
+      }
     });
   }
 });
